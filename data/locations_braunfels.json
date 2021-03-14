@@ -1,0 +1,19 @@
+{
+  "locations": [
+    {
+      "id": "haus_hoehenblick",
+      "titleMap": {
+        "la": "Domus Höhenblick",
+        "de": "Haus Höhenblick"
+      },
+      "coordinates": {
+        "mLongitude": 8.3830166,
+        "mLatitude": 50.5229691,
+        "mAltitude": 0.0
+      },
+      "descriptionMap": {
+      },
+      "isMain": true
+    }
+  ]
+}

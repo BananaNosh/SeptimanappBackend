@@ -1,0 +1,45 @@
+{
+  "locations": [
+    {
+      "id": "johanneshaus",
+      "titleMap": {
+        "la": "Domus Iohanni",
+        "de": "Johanneshaus"
+      },
+      "coordinates": {
+        "mLongitude": 8.92240,
+        "mLatitude": 50.79611,
+        "mAltitude": 0.0
+      },
+      "descriptionMap": {
+      },
+      "isMain": true
+    },
+    {
+      "id": "busstation_ritterstraße",
+      "titleMap": {
+        "de": "Busstation Ritterstraße"
+      },
+      "coordinates": {
+        "mLongitude": 8.92103,
+        "mLatitude": 50.79810,
+        "mAltitude": 0.2
+      },
+      "descriptionMap": {
+      }
+    },
+    {
+      "id": "rabanushaus",
+      "titleMap": {
+        "de": "Rabanushaus"
+      },
+      "coordinates": {
+        "mLongitude": 8.920760,
+        "mLatitude": 50.796704,
+        "mAltitude": 0.0
+      },
+      "descriptionMap": {
+      }
+    }
+  ]
+}

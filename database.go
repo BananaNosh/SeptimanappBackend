@@ -9,10 +9,24 @@ import (
 
 type Event struct {
 	gorm.Model
-	Id    int `gorm:"primary_key, AUTO_INCREMENT"`
-	Start time.Time
-	End   time.Time
-	Name  string
+	ID       int `gorm:"primary_key, AUTO_INCREMENT"`
+	Start    time.Time
+	End      time.Time
+	Name     string
+	Language string `json:"-"`
+}
+
+type Location struct {
+	gorm.Model
+}
+
+func insertStartEnd(db *gorm.DB) {
+	start := time.Date(2021, 7, 31, 16, 30, 0, 0, locale)
+	end := time.Date(2021, 8, 7, 14, 0, 0, 0, locale)
+	var event Event
+	const mainName = "__MAIN__"
+	db.FirstOrCreate(&event, Event{Start: start, End: end, Name: mainName})
+
 }
 
 func initDatabase() {
@@ -30,7 +44,7 @@ func initDatabase() {
 		panic("failed to auto migrate database")
 	}
 
-	//event := Event{Name: "Test", Start: time.Now(), End: time.Date(2010, 10, 01, 10, 10, 10, 10, time.Local)}
-	//fmt.Println(event)
-	//db.Create(&event)
+	insertStartEnd(db)
+
+	insertEventsFromJsonHorarium("./data/horarium_2020_de.json", db)
 }
