@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"gorm.io/gorm"
-	"log"
 	"os"
+	"path"
+	"regexp"
 	"time"
 )
 
@@ -49,23 +49,46 @@ func (evTime EventTime) toTime(location *time.Location) time.Time {
 	return time.Date(evTime.Year, time.Month(evTime.Month+1), evTime.Day, evTime.Hour, evTime.Month, 0, 0, location)
 }
 
-func insertEventsFromJsonHorarium(path string, db *gorm.DB) {
-	// open the file pointer
-	if horariumFile, err := os.Open(path); err == nil {
-		defer horariumFile.Close()
+func insertEventsFromJsonHorarium(dataPath string, db *gorm.DB) {
+	// Open the directory.
+	outputDirRead, _ := os.Open(dataPath)
 
-		// initialize the storage for the decoded data
-		var horarium Horarium
+	// Call Readdir to get all files.
+	outputDirFiles, _ := outputDirRead.Readdir(0)
 
-		// create a new decoder
-		err := json.NewDecoder(horariumFile).Decode(&horarium)
-		if err != nil {
-			log.Fatal(err)
-		}
+	reg := regexp.MustCompile("horarium_\\d+_(?P<lang>\\w+).json")
+	offset := 2
+	for _, file := range outputDirFiles {
+		match := reg.FindStringSubmatch(file.Name())
+		isHorariumFile := len(match) > 1
+		if isHorariumFile {
+			language := match[1]
+			println("language ", language)
 
-		events := horarium.toEventList(0)
-		for i := 0; i < 10; i++ {
-			fmt.Println(events[i])
+			// open the file pointer
+			filePath := path.Join(dataPath, file.Name())
+
+			if horarium, err := readHorariumFromFile(filePath); err == nil {
+				events := horarium.toEventList(offset)
+				offset += len(events)
+				for i := range events {
+					events[i].Language = language
+					println(events[i].ID)
+				}
+				db.Create(events)
+			}
 		}
 	}
+
+}
+
+func readHorariumFromFile(filePath string) (Horarium, error) {
+	var horarium Horarium
+	if horariumFile, err := os.Open(filePath); err == nil {
+		defer horariumFile.Close()
+
+		// create a new decoder
+		err = json.NewDecoder(horariumFile).Decode(&horarium)
+	}
+	return horarium, nil
 }

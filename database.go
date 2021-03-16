@@ -46,5 +46,5 @@ func initDatabase() {
 
 	insertStartEnd(db)
 
-	insertEventsFromJsonHorarium("./data/horarium_2020_de.json", db)
+	insertEventsFromJsonHorarium("./data/", db)
 }
