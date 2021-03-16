@@ -44,7 +44,10 @@ func initDatabase() {
 		panic("failed to auto migrate database")
 	}
 
+	firstId := 1
 	insertStartEnd(db)
+	horariaIdOffset := firstId + 1
 
-	insertEventsFromJsonHorarium("./data/", db)
+	events := eventsFromJsonHoraria("./data/", horariaIdOffset)
+	db.Create(events)
 }

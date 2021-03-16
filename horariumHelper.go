@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const horariumPattern = "horarium_\\d+_(?P<lang>\\w+).json"
+
 type Horarium struct {
 	Events   []WeekViewEvent `json:"events"`
 	Language string
@@ -49,15 +51,17 @@ func (evTime EventTime) toTime(location *time.Location) time.Time {
 	return time.Date(evTime.Year, time.Month(evTime.Month+1), evTime.Day, evTime.Hour, evTime.Month, 0, 0, location)
 }
 
-func insertEventsFromJsonHorarium(dataPath string, db *gorm.DB) {
+func eventsFromJsonHoraria(dataPath string, dataIdOffset int) []Event {
+	var allEvents []Event
 	// Open the directory.
 	outputDirRead, _ := os.Open(dataPath)
 
 	// Call Readdir to get all files.
 	outputDirFiles, _ := outputDirRead.Readdir(0)
 
-	reg := regexp.MustCompile("horarium_\\d+_(?P<lang>\\w+).json")
-	offset := 2
+	// compile regex for HorariaFiles
+	reg := regexp.MustCompile(horariumPattern)
+	offset := dataIdOffset
 	for _, file := range outputDirFiles {
 		match := reg.FindStringSubmatch(file.Name())
 		isHorariumFile := len(match) > 1
@@ -71,15 +75,15 @@ func insertEventsFromJsonHorarium(dataPath string, db *gorm.DB) {
 			if horarium, err := readHorariumFromFile(filePath); err == nil {
 				events := horarium.toEventList(offset)
 				offset += len(events)
+				// set correct language
 				for i := range events {
 					events[i].Language = language
-					println(events[i].ID)
 				}
-				db.Create(events)
+				allEvents = append(allEvents, events...)
 			}
 		}
 	}
-
+	return allEvents
 }
 
 func readHorariumFromFile(filePath string) (Horarium, error) {
