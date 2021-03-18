@@ -48,6 +48,6 @@ func initDatabase() {
 	insertStartEnd(db)
 	horariaIdOffset := firstId + 1
 
-	events := eventsFromJsonHoraria("./data/", horariaIdOffset)
+	events := EventsFromJsonHoraria("./data/", horariaIdOffset)
 	db.Create(events)
 }

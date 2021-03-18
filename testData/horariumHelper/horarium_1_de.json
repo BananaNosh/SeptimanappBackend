@@ -1,0 +1,44 @@
+{
+  "events": [
+    {
+      "mId": "e0",
+      "mStartTime": {
+        "year": 2019,
+        "month": 6,
+        "dayOfMonth": 25,
+        "hourOfDay": 16,
+        "minute": 30
+      },
+      "mEndTime": {
+        "year": 2019,
+        "month": 6,
+        "dayOfMonth": 25,
+        "hourOfDay": 18,
+        "minute": 0
+      },
+      "mName": "test0",
+      "mColor": 0,
+      "mAllDay": false
+    },
+    {
+      "mId": "ev1",
+      "mStartTime": {
+        "year": 2019,
+        "month": 6,
+        "dayOfMonth": 25,
+        "hourOfDay": 20,
+        "minute": 30
+      },
+      "mEndTime": {
+        "year": 2019,
+        "month": 6,
+        "dayOfMonth": 25,
+        "hourOfDay": 21,
+        "minute": 0
+      },
+      "mName": "test1",
+      "mColor": 0,
+      "mAllDay": false
+    }
+  ]
+}

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"gorm.io/gorm"
+	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -16,15 +17,15 @@ type Horarium struct {
 	Language string
 }
 
-func (horarium Horarium) toEventList(idOffset int) []Event {
-	var events []Event
+func (horarium Horarium) ToEventList(idOffset int) []Event {
+	var events = make([]Event, 0)
 	for i, event := range horarium.Events {
 		id := idOffset + i
 		events = append(events, Event{
-			Model:    gorm.Model{ID: uint(i), CreatedAt: time.Now(), UpdatedAt: time.Now()},
+			Model:    gorm.Model{ID: uint(id), CreatedAt: time.Now(), UpdatedAt: time.Now()},
 			ID:       id,
-			Start:    event.StartTime.toTime(locale),
-			End:      event.EndTime.toTime(locale),
+			Start:    event.StartTime.ToTime(locale),
+			End:      event.EndTime.ToTime(locale),
 			Name:     event.Name,
 			Language: horarium.Language,
 		})
@@ -47,17 +48,18 @@ type EventTime struct {
 	Minute int `json:"minute"`
 }
 
-func (evTime EventTime) toTime(location *time.Location) time.Time {
+func (evTime EventTime) ToTime(location *time.Location) time.Time {
 	return time.Date(evTime.Year, time.Month(evTime.Month+1), evTime.Day, evTime.Hour, evTime.Month, 0, 0, location)
 }
 
-func eventsFromJsonHoraria(dataPath string, dataIdOffset int) []Event {
+func EventsFromJsonHoraria(dataPath string, dataIdOffset int) []Event {
 	var allEvents []Event
 	// Open the directory.
-	outputDirRead, _ := os.Open(dataPath)
+	//outputDirRead, _ := os.Open(dataPath)
 
 	// Call Readdir to get all files.
-	outputDirFiles, _ := outputDirRead.Readdir(0)
+	//outputDirFiles, _ := outputDirRead.Readdir(0)
+	outputDirFiles, _ := ioutil.ReadDir(dataPath)
 
 	// compile regex for HorariaFiles
 	reg := regexp.MustCompile(horariumPattern)
@@ -67,13 +69,12 @@ func eventsFromJsonHoraria(dataPath string, dataIdOffset int) []Event {
 		isHorariumFile := len(match) > 1
 		if isHorariumFile {
 			language := match[1]
-			println("language ", language)
 
 			// open the file pointer
 			filePath := path.Join(dataPath, file.Name())
 
 			if horarium, err := readHorariumFromFile(filePath); err == nil {
-				events := horarium.toEventList(offset)
+				events := horarium.ToEventList(offset)
 				offset += len(events)
 				// set correct language
 				for i := range events {
