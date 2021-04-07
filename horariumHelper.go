@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const horariumPattern = "horarium_\\d+_(?P<lang>\\w+).json"
+const horariumFilePattern = "horarium_\\d+_(?P<lang>\\w+).json"
 
 type Horarium struct {
 	Events   []WeekViewEvent `json:"events"`
@@ -62,7 +62,7 @@ func EventsFromJsonHoraria(dataPath string, dataIdOffset int) []Event {
 	outputDirFiles, _ := ioutil.ReadDir(dataPath)
 
 	// compile regex for HorariaFiles
-	reg := regexp.MustCompile(horariumPattern)
+	reg := regexp.MustCompile(horariumFilePattern)
 	offset := dataIdOffset
 	for _, file := range outputDirFiles {
 		match := reg.FindStringSubmatch(file.Name())

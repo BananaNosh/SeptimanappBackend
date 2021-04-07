@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"path"
 	"time"
 )
 
@@ -18,6 +19,22 @@ type Event struct {
 
 type Location struct {
 	gorm.Model
+	ID              string `gorm:"primary_key"`
+	OverallLocation string
+	Longitude       float32
+	Latitude        float32
+	Altitude        float32
+	IsMain          bool
+	Titles          []LocationString `gorm:"foreignKey:LocationID"`
+	Descriptions    []LocationString `gorm:"foreignKey:LocationID"`
+}
+
+type LocationString struct {
+	gorm.Model
+	ID         int `gorm:"primary_key, AUTO_INCREMENT"`
+	Value      string
+	Language   string
+	LocationID string
 }
 
 func insertStartEnd(db *gorm.DB) {
@@ -31,7 +48,17 @@ func insertStartEnd(db *gorm.DB) {
 
 func initDatabase() {
 	fmt.Println("Init Database")
-	db, err := gorm.Open(sqlite.Open("./data/septimana.db"), &gorm.Config{})
+	//newLogger := logger.New(
+	//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+	//	logger.Config{
+	//		SlowThreshold: time.Second,   // Slow SQL threshold
+	//		LogLevel:      logger.Info, // Log level
+	//	},
+	//)
+	db, err := gorm.Open(sqlite.Open(path.Join(dataPath, "septimana.db")), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true, // TODO needed ? or even bad
+		//Logger: newLogger,
+	})
 	if err != nil {
 		fmt.Println(err.Error())
 		panic("failed to connect database")
@@ -40,7 +67,6 @@ func initDatabase() {
 	// Migrate the schema
 	err = db.AutoMigrate(&Event{})
 	if err != nil {
-		fmt.Println(err.Error())
 		panic("failed to auto migrate database")
 	}
 
@@ -48,6 +74,14 @@ func initDatabase() {
 	insertStartEnd(db)
 	horariaIdOffset := firstId + 1
 
-	events := EventsFromJsonHoraria("./data/", horariaIdOffset)
+	events := EventsFromJsonHoraria(dataPath, horariaIdOffset)
 	db.Create(events)
+
+	err = db.AutoMigrate(&Location{}, &LocationString{})
+	if err != nil {
+		panic("failed to auto migrate database")
+	}
+
+	locations := LocationsFromJsonFiles(dataPath)
+	fmt.Println(locations)
 }

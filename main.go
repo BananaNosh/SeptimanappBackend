@@ -7,6 +7,8 @@ import (
 
 var locale *time.Location
 
+const dataPath = "./data"
+
 func main() {
 	location, err := time.LoadLocation("Europe/Berlin")
 	if err != nil {
