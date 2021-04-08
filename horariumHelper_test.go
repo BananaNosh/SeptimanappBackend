@@ -3,11 +3,49 @@ package main
 import (
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
-	"os"
 	"reflect"
 	"testing"
 	"time"
 )
+
+var eventTime1 EventTime
+var eventTime2 EventTime
+var eventTime3 EventTime
+var eventTime4 EventTime
+var horarium Horarium
+var events []Event
+
+func init() {
+	eventTime1 = EventTime{
+		Year:   2019,
+		Month:  6,
+		Day:    25,
+		Hour:   16,
+		Minute: 30,
+	}
+	eventTime2 = EventTime{
+		Year:   2019,
+		Month:  6,
+		Day:    25,
+		Hour:   18,
+		Minute: 00,
+	}
+	eventTime3 = eventTime1
+	eventTime3.Hour = 20
+	eventTime4 = eventTime2
+	eventTime4.Hour = 21
+	locale, _ = time.LoadLocation("Europe/Berlin")
+	horariumEvents := []WeekViewEvent{
+		{"e0", eventTime1, eventTime2, "test0"},
+		{"ev1", eventTime3, eventTime4, "test1"},
+	}
+	horarium = Horarium{horariumEvents, "la"}
+
+	events = []Event{
+		{gorm.Model{ID: 0, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 0, eventTime1.ToTime(locale), eventTime2.ToTime(locale), "test0", "la"},
+		{gorm.Model{ID: 1, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 1, eventTime3.ToTime(locale), eventTime4.ToTime(locale), "test1", "la"},
+	}
+}
 
 //func TestEventTime_ToTime(t *testing.T) {
 //	type fields struct {
@@ -107,48 +145,4 @@ func Test_eventsFromJsonHoraria(t *testing.T) {
 			}
 		})
 	}
-}
-
-func setup() {
-	eventTime1 = EventTime{
-		Year:   2019,
-		Month:  6,
-		Day:    25,
-		Hour:   16,
-		Minute: 30,
-	}
-	eventTime2 = EventTime{
-		Year:   2019,
-		Month:  6,
-		Day:    25,
-		Hour:   18,
-		Minute: 00,
-	}
-	eventTime3 = eventTime1
-	eventTime3.Hour = 20
-	eventTime4 = eventTime2
-	eventTime4.Hour = 21
-	locale, _ = time.LoadLocation("Europe/Berlin")
-	horariumEvents := []WeekViewEvent{
-		{"e0", eventTime1, eventTime2, "test0"},
-		{"ev1", eventTime3, eventTime4, "test1"},
-	}
-	horarium = Horarium{horariumEvents, "la"}
-
-	events = []Event{
-		{gorm.Model{ID: 0, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 0, eventTime1.ToTime(locale), eventTime2.ToTime(locale), "test0", "la"},
-		{gorm.Model{ID: 1, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 1, eventTime3.ToTime(locale), eventTime4.ToTime(locale), "test1", "la"},
-	}
-}
-
-var eventTime1 EventTime
-var eventTime2 EventTime
-var eventTime3 EventTime
-var eventTime4 EventTime
-var horarium Horarium
-var events []Event
-
-func TestMain(m *testing.M) {
-	setup()
-	os.Exit(m.Run())
 }

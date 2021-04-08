@@ -1,0 +1,38 @@
+{
+  "locations": [
+    {
+      "id": "test1",
+      "titleMap": {
+        "la": "testTitle1la",
+        "de": "testTitle1de"
+      },
+      "coordinates": {
+        "mLongitude": 100,
+        "mLatitude": 1000,
+        "mAltitude": 10
+      },
+      "descriptionMap": {
+        "de": "testDesc1de",
+        "la": "testDesc1la"
+      },
+      "isMain": true
+    },
+    {
+      "id": "test2",
+      "titleMap": {
+        "la": "testTitle2la",
+        "de": "testTitle2de"
+      },
+      "coordinates": {
+        "mLongitude": 101,
+        "mLatitude": 1001,
+        "mAltitude": 1
+      },
+      "descriptionMap": {
+        "de": "testDesc2de",
+        "la": "testDesc2la"
+      },
+      "isMain": true
+    }
+  ]
+}

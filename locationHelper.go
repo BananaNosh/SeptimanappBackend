@@ -9,15 +9,12 @@ import (
 	"regexp"
 )
 
-const locationFilePattern = "locations_(?P<location>\\w+).json"
+const locationFilePattern = "locations_(?P<location>(\\w|\\d)+)\\.json"
 
 func LocationsFromJsonFiles(dataPath string) []Location {
 	var allLocations []Location
-	// Open the directory.
-	//outputDirRead, _ := os.Open(dataPath)
 
 	// Call Readdir to get all files.
-	//outputDirFiles, _ := outputDirRead.Readdir(0)
 	outputDirFiles, _ := ioutil.ReadDir(dataPath)
 
 	// compile regex for HorariaFiles
@@ -57,6 +54,9 @@ func readLocationsFromFile(filePath string) (_ []Location, err error) {
 }
 
 func (location *Location) UnmarshalJSON(data []byte) (err error) {
+	/**
+	Unmarshal json bytes to location
+	*/
 	var auxiliaryLocation struct {
 		Id             string
 		TitleMap       map[string]string

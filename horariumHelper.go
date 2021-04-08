@@ -54,11 +54,8 @@ func (evTime EventTime) ToTime(location *time.Location) time.Time {
 
 func EventsFromJsonHoraria(dataPath string, dataIdOffset int) []Event {
 	var allEvents []Event
-	// Open the directory.
-	//outputDirRead, _ := os.Open(dataPath)
 
 	// Call Readdir to get all files.
-	//outputDirFiles, _ := outputDirRead.Readdir(0)
 	outputDirFiles, _ := ioutil.ReadDir(dataPath)
 
 	// compile regex for HorariaFiles
