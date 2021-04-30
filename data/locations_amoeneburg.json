@@ -18,7 +18,8 @@
     {
       "id": "busstation_ritterstraße",
       "titleMap": {
-        "de": "Busstation Ritterstraße"
+        "de": "Busstation Ritterstraße",
+        "la": "statio vehiculorum Ritterstraße"
       },
       "coordinates": {
         "mLongitude": 8.92103,
@@ -31,7 +32,8 @@
     {
       "id": "rabanushaus",
       "titleMap": {
-        "de": "Rabanushaus"
+        "de": "Rabanushaus",
+        "la": "domus Rabani"
       },
       "coordinates": {
         "mLongitude": 8.920760,

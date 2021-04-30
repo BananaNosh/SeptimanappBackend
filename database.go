@@ -56,7 +56,7 @@ func initDatabase() {
 	//	},
 	//)
 	db, err := gorm.Open(sqlite.Open(path.Join(dataPath, "septimana.db")), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true, // TODO needed ? or even bad
+		DisableForeignKeyConstraintWhenMigrating: true,
 		//Logger: newLogger,
 	})
 	if err != nil {
@@ -83,5 +83,6 @@ func initDatabase() {
 	}
 
 	locations := LocationsFromJsonFiles(dataPath)
-	fmt.Println(locations)
+	db.Create(locations)
+
 }
