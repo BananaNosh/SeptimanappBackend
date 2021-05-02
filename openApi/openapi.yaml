@@ -1,0 +1,75 @@
+  openapi: "3.0.0"
+  info:
+    description: HTTP server in Go with Swagger endpoints definition
+
+    title: http-go-server
+
+    version: 0.1.0
+
+
+  paths:
+    /events/{id}:
+      get:
+        parameters:
+          - name: id
+            schema:
+              type: integer
+            in: path
+            required: true
+        responses:
+          200:
+            description: "Returns the event with the given id"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/event"
+    /events:
+      get:
+        parameters:
+          - name: year
+            description: "if given only events of this year are returned"
+            in: query
+            schema:
+              type: integer
+              minimum: 2018
+              maximum: 2020
+              example: 2019
+          - name: lang
+            description: "if given only events in this language are returned"
+            in: query
+            schema:
+              type: string
+              enum: ["de", "la"]
+              example: "la"
+        responses:
+          200:
+            description: 'returns the events of the septimana for all or a specific year'
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/event"
+
+  components:
+    schemas:
+      event:
+        type: object
+        properties:
+          id:
+            type: integer
+          start:
+            type: integer
+            description: "The start time of the event as UNIX timestamp"
+          end:
+            type: integer
+            description: "The end time of the event as UNIX timestamp"
+          name:
+            type: string
+            description: "The name/description of the event"
+          language:
+            type: string
+            description: "The language of the name of the event"
+          location:
+            type: string
+            description: "The location of the event"
