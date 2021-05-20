@@ -22,7 +22,7 @@
             content:
               application/json:
                 schema:
-                  $ref: "types.yaml#/components/schemas/event"
+                  $ref: "./types/types.yaml#/components/schemas/event"
     /events:
       get:
         parameters:
@@ -47,9 +47,22 @@
             content:
               application/json:
                 schema:
-                  type: array
-                  items:
-                    $ref: "types.yaml#/components/schemas/event"
+                  $ref: "./types/types.yaml#/components/schemas/events"
+
+      post:
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "./types/types.yaml#/components/schemas/event"
+        responses:
+          200:
+            description: "Saves the posted events"
+            content:
+              application/json:
+                schema:
+                  $ref: "./types/types.yaml#/components/schemas/events"
 
 
 #    /hostname:

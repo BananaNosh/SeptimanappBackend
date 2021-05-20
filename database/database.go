@@ -1,12 +1,15 @@
-package main
+package database
 
 import (
+	"SeptimanappBackend/util"
 	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"path"
 	"time"
 )
+
+const dataPath = "./data"
 
 type Event struct {
 	gorm.Model
@@ -38,15 +41,15 @@ type LocationString struct {
 }
 
 func insertStartEnd(db *gorm.DB) {
-	start := time.Date(2021, 7, 31, 16, 30, 0, 0, locale)
-	end := time.Date(2021, 8, 7, 14, 0, 0, 0, locale)
+	start := time.Date(2021, 7, 31, 16, 30, 0, 0, util.Locale())
+	end := time.Date(2021, 8, 7, 14, 0, 0, 0, util.Locale())
 	var event Event
 	const mainName = "__MAIN__"
 	db.FirstOrCreate(&event, Event{Start: start, End: end, Name: mainName})
 
 }
 
-func initDatabase() {
+func InitDatabase() {
 	fmt.Println("Init Database")
 	//newLogger := logger.New(
 	//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
@@ -83,6 +86,9 @@ func initDatabase() {
 	}
 
 	locations := LocationsFromJsonFiles(dataPath)
+	//for _, location := range locations { TODO replace with check if existent
+	//	db.Updates(&location)
+	//}
 	db.Create(locations)
 
 }

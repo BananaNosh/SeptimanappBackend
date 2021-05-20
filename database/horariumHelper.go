@@ -1,6 +1,7 @@
-package main
+package database
 
 import (
+	"SeptimanappBackend/util"
 	"encoding/json"
 	"gorm.io/gorm"
 	"io/ioutil"
@@ -24,8 +25,8 @@ func (horarium Horarium) ToEventList(idOffset int) []Event {
 		events = append(events, Event{
 			Model:    gorm.Model{ID: uint(id), CreatedAt: time.Now(), UpdatedAt: time.Now()},
 			ID:       id,
-			Start:    event.StartTime.ToTime(locale),
-			End:      event.EndTime.ToTime(locale),
+			Start:    event.StartTime.ToTime(util.Locale()),
+			End:      event.EndTime.ToTime(util.Locale()),
 			Name:     event.Name,
 			Language: horarium.Language,
 		})
