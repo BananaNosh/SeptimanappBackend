@@ -34,7 +34,7 @@ func init() {
 	eventTime3.Hour = 20
 	eventTime4 = eventTime2
 	eventTime4.Hour = 21
-	locale, _ = time.LoadLocation("Europe/Berlin")
+	var locale, _ = time.LoadLocation("Europe/Berlin")
 	horariumEvents := []WeekViewEvent{
 		{"e0", eventTime1, eventTime2, "test0"},
 		{"ev1", eventTime3, eventTime4, "test1"},
@@ -131,7 +131,7 @@ func Test_eventsFromJsonHoraria(t *testing.T) {
 		dataIdOffset int
 		want         []Event
 	}{
-		{"test1", "./testData/horariumHelper/", 10, append(wantedEventsDe, wantedEventsLa...)},
+		{"test1", "../data/testData/horariumHelper/", 10, append(wantedEventsDe, wantedEventsLa...)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

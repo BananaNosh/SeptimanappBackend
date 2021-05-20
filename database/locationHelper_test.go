@@ -52,7 +52,7 @@ func TestLocationsFromJsonFiles(t *testing.T) {
 	}{
 		{
 			"test1",
-			"./testData/locationHelper/",
+			"../data/testData/locationHelper/",
 			locations,
 		},
 	}
