@@ -1,6 +1,7 @@
 package database
 
 import (
+	"SeptimanappBackend/types"
 	"SeptimanappBackend/util"
 	"fmt"
 	"gorm.io/driver/sqlite"
@@ -11,41 +12,12 @@ import (
 
 const dataPath = "./data"
 
-type Event struct {
-	gorm.Model
-	ID       int `gorm:"primary_key, AUTO_INCREMENT"`
-	Start    time.Time
-	End      time.Time
-	Name     string
-	Language string `json:"-"`
-}
-
-type Location struct {
-	gorm.Model
-	ID              string `gorm:"primary_key"`
-	OverallLocation string
-	Longitude       float32
-	Latitude        float32
-	Altitude        float32
-	IsMain          bool
-	Titles          []LocationString `gorm:"foreignKey:LocationID"`
-	Descriptions    []LocationString `gorm:"foreignKey:LocationID"`
-}
-
-type LocationString struct {
-	gorm.Model
-	ID         int `gorm:"primary_key, AUTO_INCREMENT"`
-	Value      string
-	Language   string
-	LocationID string
-}
-
 func insertStartEnd(db *gorm.DB) {
 	start := time.Date(2021, 7, 31, 16, 30, 0, 0, util.Locale())
 	end := time.Date(2021, 8, 7, 14, 0, 0, 0, util.Locale())
-	var event Event
+	var event types.Event
 	const mainName = "__MAIN__"
-	db.FirstOrCreate(&event, Event{Start: start, End: end, Name: mainName})
+	db.FirstOrCreate(&event, types.Event{Start: start, End: end, Name: mainName})
 
 }
 
@@ -68,7 +40,7 @@ func InitDatabase() {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&Event{})
+	err = db.AutoMigrate(&types.Event{})
 	if err != nil {
 		panic("failed to auto migrate database")
 	}
@@ -80,7 +52,7 @@ func InitDatabase() {
 	events := EventsFromJsonHoraria(dataPath, horariaIdOffset)
 	db.Create(events)
 
-	err = db.AutoMigrate(&Location{}, &LocationString{})
+	err = db.AutoMigrate(&types.Location{}, &types.LocationString{})
 	if err != nil {
 		panic("failed to auto migrate database")
 	}

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	externalRef0 "SeptimanappBackend/database"
+	externalRef0 "SeptimanappBackend/types"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/labstack/echo/v4"
@@ -20,11 +20,8 @@ type GetEventsParams struct {
 	Year *int `json:"year,omitempty"`
 
 	// if given only events in this language are returned
-	Lang *GetEventsParamsLang `json:"lang,omitempty"`
+	Lang *externalRef0.Language `json:"lang,omitempty"`
 }
-
-// GetEventsParamsLang defines parameters for GetEvents.
-type GetEventsParamsLang string
 
 // PostEventsJSONBody defines parameters for PostEvents.
 type PostEventsJSONBody externalRef0.Event
@@ -43,6 +40,12 @@ type ServerInterface interface {
 
 	// (GET /events/{id})
 	GetEventsId(ctx echo.Context, id int) error
+
+	// (GET /locations)
+	GetLocations(ctx echo.Context) error
+
+	// (GET /locations/{id})
+	GetLocationsId(ctx echo.Context, id string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -100,6 +103,31 @@ func (w *ServerInterfaceWrapper) GetEventsId(ctx echo.Context) error {
 	return err
 }
 
+// GetLocations converts echo context to params.
+func (w *ServerInterfaceWrapper) GetLocations(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetLocations(ctx)
+	return err
+}
+
+// GetLocationsId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetLocationsId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetLocationsId(ctx, id)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -131,5 +159,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/events", wrapper.GetEvents)
 	router.POST(baseURL+"/events", wrapper.PostEvents)
 	router.GET(baseURL+"/events/:id", wrapper.GetEventsId)
+	router.GET(baseURL+"/locations", wrapper.GetLocations)
+	router.GET(baseURL+"/locations/:id", wrapper.GetLocationsId)
 
 }

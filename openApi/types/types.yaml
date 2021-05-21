@@ -34,3 +34,46 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/event"
+
+    location:
+      type: object
+      properties:
+        id:
+          type: string
+        overallLocation:
+          type: string
+          enum: ["amoeneburg", "braunfels"]
+          example: "braunfels"
+        longitude:
+          type: number
+          format: float
+        latitude:
+          type: number
+          format: float
+        altitude:
+          type: number
+          format: float
+        isMain:
+          type: boolean
+        titleMap:
+          $ref: "#/components/schemas/stringMap"
+        descriptionMap:
+          $ref: "#/components/schemas/stringMap"
+
+    locations:
+      type: array
+      items:
+        $ref: "#/components/schemas/location"
+
+    language:
+      type: string
+      enum: [ "de", "la" ]
+      example: "la"
+
+    stringMap:
+      type: object
+      properties:
+        la:
+          type: string
+        de:
+          type: string

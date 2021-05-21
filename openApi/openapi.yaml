@@ -38,9 +38,7 @@
             description: "if given only events in this language are returned"
             in: query
             schema:
-              type: string
-              enum: ["de", "la"]
-              example: "la"
+              $ref: "./types/types.yaml#/components/schemas/language"
         responses:
           200:
             description: 'returns the events of the septimana for all or a specific year'
@@ -63,6 +61,31 @@
               application/json:
                 schema:
                   $ref: "./types/types.yaml#/components/schemas/events"
+
+    /locations/{id}:
+      get:
+        parameters:
+          - name: id
+            schema:
+              type: string
+            in: path
+            required: true
+        responses:
+          200:
+            description: "Returns the location with the given id"
+            content:
+              application/json:
+                schema:
+                  $ref: "./types/types.yaml#/components/schemas/location"
+    /locations:
+      get:
+        responses:
+          200:
+            description: "Returns all locations"
+            content:
+              application/json:
+                schema:
+                  $ref: "./types/types.yaml#/components/schemas/locations"
 
 
 #    /hostname:
@@ -108,27 +131,3 @@
 #          400:
 #
 #            description: Invalid characters in "user" were provided.
-
-
-#  components:
-#    schemas:
-#      event:
-#        type: object
-#        properties:
-#          id:
-#            type: integer
-#          start:
-#            type: integer
-#            description: "The start time of the event as UNIX timestamp"
-#          end:
-#            type: integer
-#            description: "The end time of the event as UNIX timestamp"
-#          name:
-#            type: string
-#            description: "The name/description of the event"
-#          language:
-#            type: string
-#            description: "The language of the name of the event"
-#          location:
-#            type: string
-#            description: "The location of the event"

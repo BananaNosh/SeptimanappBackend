@@ -1,6 +1,7 @@
 package database
 
 import (
+	"SeptimanappBackend/types"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"reflect"
@@ -13,7 +14,7 @@ var eventTime2 EventTime
 var eventTime3 EventTime
 var eventTime4 EventTime
 var horarium Horarium
-var events []Event
+var events []types.Event
 
 func init() {
 	eventTime1 = EventTime{
@@ -41,7 +42,7 @@ func init() {
 	}
 	horarium = Horarium{horariumEvents, "la"}
 
-	events = []Event{
+	events = []types.Event{
 		{gorm.Model{ID: 0, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 0, eventTime1.ToTime(locale), eventTime2.ToTime(locale), "test0", "la"},
 		{gorm.Model{ID: 1, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 1, eventTime3.ToTime(locale), eventTime4.ToTime(locale), "test1", "la"},
 	}
@@ -88,9 +89,9 @@ func TestHorarium_toEventList(t *testing.T) {
 		name     string
 		horarium Horarium
 		idOffset int
-		want     []Event
+		want     []types.Event
 	}{
-		{"empty horarium", Horarium{Events: []WeekViewEvent{}, Language: "la"}, 0, []Event{}},
+		{"empty horarium", Horarium{Events: []WeekViewEvent{}, Language: "la"}, 0, []types.Event{}},
 		{"horarium1", horarium, 0, wantedEvents},
 	}
 	for _, tt := range tests {
@@ -112,8 +113,8 @@ func TestHorarium_toEventList(t *testing.T) {
 }
 
 func Test_eventsFromJsonHoraria(t *testing.T) {
-	var wantedEventsDe []Event
-	var wantedEventsLa []Event
+	var wantedEventsDe []types.Event
+	var wantedEventsLa []types.Event
 	_ = copier.Copy(&wantedEventsDe, &events)
 	_ = copier.Copy(&wantedEventsLa, &events)
 	for i := range wantedEventsDe {
@@ -129,7 +130,7 @@ func Test_eventsFromJsonHoraria(t *testing.T) {
 		name         string
 		dataPath     string
 		dataIdOffset int
-		want         []Event
+		want         []types.Event
 	}{
 		{"test1", "../data/testData/horariumHelper/", 10, append(wantedEventsDe, wantedEventsLa...)},
 	}

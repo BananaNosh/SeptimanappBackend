@@ -1,6 +1,7 @@
 package database
 
 import (
+	"SeptimanappBackend/types"
 	"SeptimanappBackend/util"
 	"encoding/json"
 	"gorm.io/gorm"
@@ -18,11 +19,11 @@ type Horarium struct {
 	Language string
 }
 
-func (horarium Horarium) ToEventList(idOffset int) []Event {
-	var events = make([]Event, 0)
+func (horarium Horarium) ToEventList(idOffset int) []types.Event {
+	var events = make([]types.Event, 0)
 	for i, event := range horarium.Events {
 		id := idOffset + i
-		events = append(events, Event{
+		events = append(events, types.Event{
 			Model:    gorm.Model{ID: uint(id), CreatedAt: time.Now(), UpdatedAt: time.Now()},
 			ID:       id,
 			Start:    event.StartTime.ToTime(util.Locale()),
@@ -53,8 +54,8 @@ func (evTime EventTime) ToTime(location *time.Location) time.Time {
 	return time.Date(evTime.Year, time.Month(evTime.Month+1), evTime.Day, evTime.Hour, evTime.Month, 0, 0, location)
 }
 
-func EventsFromJsonHoraria(dataPath string, dataIdOffset int) []Event {
-	var allEvents []Event
+func EventsFromJsonHoraria(dataPath string, dataIdOffset int) []types.Event {
+	var allEvents []types.Event
 
 	// Call Readdir to get all files.
 	outputDirFiles, _ := ioutil.ReadDir(dataPath)
