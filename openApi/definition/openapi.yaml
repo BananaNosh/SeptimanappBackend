@@ -22,7 +22,7 @@
             content:
               application/json:
                 schema:
-                  $ref: "./types/types.yaml#/components/schemas/event"
+                  $ref: "./types.yaml#/components/schemas/event"
     /events:
       get:
         parameters:
@@ -38,14 +38,14 @@
             description: "if given only events in this language are returned"
             in: query
             schema:
-              $ref: "./types/types.yaml#/components/schemas/language"
+              $ref: "./types.yaml#/components/schemas/language"
         responses:
           200:
             description: 'returns the events of the septimana for all or a specific year'
             content:
               application/json:
                 schema:
-                  $ref: "./types/types.yaml#/components/schemas/events"
+                  $ref: "./types.yaml#/components/schemas/events"
 
       post:
         requestBody:
@@ -53,14 +53,14 @@
           content:
             application/json:
               schema:
-                $ref: "./types/types.yaml#/components/schemas/event"
+                $ref: "./types.yaml#/components/schemas/event"
         responses:
           200:
             description: "Saves the posted events"
             content:
               application/json:
                 schema:
-                  $ref: "./types/types.yaml#/components/schemas/events"
+                  $ref: "./types.yaml#/components/schemas/events"
 
     /locations/{id}:
       get:
@@ -76,7 +76,7 @@
             content:
               application/json:
                 schema:
-                  $ref: "./types/types.yaml#/components/schemas/location"
+                  $ref: "./types.yaml#/components/schemas/location"
     /locations:
       get:
         responses:
@@ -85,7 +85,7 @@
             content:
               application/json:
                 schema:
-                  $ref: "./types/types.yaml#/components/schemas/locations"
+                  $ref: "./types.yaml#/components/schemas/locations"
 
 
 #    /hostname:

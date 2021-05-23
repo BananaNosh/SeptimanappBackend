@@ -20,16 +20,16 @@ import (
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8yUQW/UMBCF/4o1cHSTdLlAjpUQVOqhor0hDiaZJAOJ7dqTpdHK/x05bna729KtEBQu",
-	"a1n7bL838002UJnBGo2aPZSbIIF0Y6DcQI2+cmSZjIYSPl5fXwqPbo1ONMYJ7lBcoWUalFbiQjFpJc5U",
-	"9R11DRKYuEcowS8Sa0++pn9POmYLEtbofLq7yE6zAoIEY1ErS1DCm6zICpBgFXfRF+S4vrMILXJcjEWn",
-	"orvzGkr4gPw+KeIhpwZkdB7Kz4dBqBEtrVELo/tJpFuFaQR35MWEygnlUDjk0WmMUSieuhnRTSBBqyHG",
-	"ijqQ4KsOBxXN4K0abEy8Kk7fSRjULQ3jELerQsJAetmevpXAk42XkGZs0UEI8lkmSSeTvdLtqFp8jtGo",
-	"3TP62mEDJWR5NOHTbzapoX+V70DIk97ny1MQwhcJDr012uPchVVRxKUymlHPDVHW9lTNLcm/+Zhj89sP",
-	"33U7hCAPSpMC+xnA+91DsWVtBlT1vYiL8BYraqiam5tutMY/gtCl8TuGHN6M6PnM1NPfjpk8xQfJYQ0l",
-	"uxHDf1LtK7XGVOtYM6zFThrkMpT5hupwfDLP64ezOTMbh3yHLNVwWI37AD8Ynn8A5mOV+nTIpfhB3M3b",
-	"NMpUL1XrTTLz5NfsYit60Xw7b09kjLO1J9xLdRSHbbQ/SoRnR7p9cSCW2MeYWHS/wCKEnwEAAP//sSuB",
-	"YIoHAAA=",
+	"H4sIAAAAAAAC/8SUQW/UPhDFv4o1///RTdLlAjlWQlCph4r2hjiYZJIMJLZrT5ZGK3935LjZ7W5Lt0Kw",
+	"nCxrX8bvzfxmN1CZwRqNmj2UmyCBdGOg3ECNvnJkmYyGEj7e3l4Lj26NTjTGCe5Q3KBlGpRW4koxaSUu",
+	"VPUddQ0SmLhHKMEvEmvPvqZfzzpmCxLW6HyqXWTnWQFBgrGolSUo4U1WZAVIsIq76AtyXD9YhBY5Hsai",
+	"U9HdZQ0lfEB+nxTxI6cGZHQeys+HQagRLa1RC6P7SaSqwjSCO/JiQuWEcigc8ug0xigUv7ob0U0gQash",
+	"xoo6kOCrDgcVzeC9GmxMvCrO30kY1D0N4xCvq0LCQHq5nr+VwJONRUgztuggBPkqk6STyV7pdlQtvsZo",
+	"1O4Z/d9hAyVkeTThs0kN/X/5DoE8KX2+PAIhfJHg0FujPc79XxVFPCqjGfU8CmVtT9U8jPybjwk2v/Hk",
+	"w4RDCPKgHSmkn6F7PDEUW75mKFXfi3gIb7Gihqp5oKmiNf4ZbK6N33Hj8G5Ezxemnv5ewOQmPkUOayjZ",
+	"jRj+eYdv1BpTf2OfsBY7aZDL8uUbqsPxDbysn+7gzGZc5h2aVMNhHx6D+mRJTorhcz36dEih+EHczde0",
+	"rFQv/epNsvHi/9XVVnSiZDtXL6SLO7Qn3MtzFIFtqD9KgWdHuj0hBEvgYxwsul+gEMLPAAAA//+rG1UT",
+	"YAcAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
@@ -71,7 +71,7 @@ func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
 
 	pathPrefix := path.Dir(pathToFile)
 
-	for rawPath, rawFunc := range externalRef0.PathToRawSpec(path.Join(pathPrefix, "./types/types.yaml")) {
+	for rawPath, rawFunc := range externalRef0.PathToRawSpec(path.Join(pathPrefix, "./types.yaml")) {
 		if _, ok := res[rawPath]; ok {
 			// it is not possible to compare functions in golang, so always overwrite the old value
 		}

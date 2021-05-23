@@ -15,6 +15,7 @@ require (
 	//github.com/jessevdk/go-flags v1.5.0
 	github.com/jinzhu/copier v0.2.8
 	github.com/labstack/echo/v4 v4.2.2
+	github.com/swaggo/echo-swagger v1.1.0
 	//golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.20.12

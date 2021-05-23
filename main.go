@@ -2,11 +2,12 @@ package main
 
 import (
 	"SeptimanappBackend/database"
-	"fmt"
+	Openapi "SeptimanappBackend/openApi"
 )
 
 func main() {
 
-	fmt.Println("Test")
 	database.InitDatabase()
+
+	Openapi.StartRestApi()
 }
