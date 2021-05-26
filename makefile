@@ -6,3 +6,6 @@ typeSpecs:
 
 specs: typeSpecs
 	/home/jonathan/go/bin/oapi-codegen -generate spec --import-mapping=./types.yaml:SeptimanappBackend/openApi/types openApi/definition/openapi.yaml > openApi/oapiSpec.gen.go
+
+cleanData:
+	rm ./data/septimana.db

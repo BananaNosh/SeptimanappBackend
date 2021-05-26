@@ -16,8 +16,7 @@ func insertStartEnd(db *gorm.DB) {
 	start := time.Date(2021, 7, 31, 16, 30, 0, 0, util.Locale())
 	end := time.Date(2021, 8, 7, 14, 0, 0, 0, util.Locale())
 	var event types.Event
-	const mainName = "__MAIN__"
-	db.FirstOrCreate(&event, types.Event{Start: start, End: end, Name: mainName})
+	db.FirstOrCreate(&event, types.Event{Start: start, End: end, Names: nil})
 
 }
 
@@ -40,7 +39,7 @@ func InitDatabase() {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&types.Event{})
+	err = db.AutoMigrate(&types.Event{}, &types.LocatedString{})
 	if err != nil {
 		panic("failed to auto migrate database")
 	}
@@ -49,10 +48,14 @@ func InitDatabase() {
 	insertStartEnd(db)
 	horariaIdOffset := firstId + 1
 
-	events := EventsFromJsonHoraria(dataPath, horariaIdOffset)
-	db.Create(events)
+	events, err := EventsFromJsonHoraria(dataPath, horariaIdOffset)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		db.Create(events)
+	}
 
-	err = db.AutoMigrate(&types.Location{}, &types.LocationString{})
+	err = db.AutoMigrate(&types.Location{})
 	if err != nil {
 		panic("failed to auto migrate database")
 	}

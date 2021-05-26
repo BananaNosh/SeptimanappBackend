@@ -8,11 +8,10 @@ import (
 
 type Event struct {
 	gorm.Model
-	ID       int `gorm:"primary_key, AUTO_INCREMENT"`
-	Start    time.Time
-	End      time.Time
-	Name     string
-	Language string `json:"-"`
+	ID    int `gorm:"primary_key, AUTO_INCREMENT"`
+	Start time.Time
+	End   time.Time
+	Names []LocatedString `gorm:"foreignKey:ParentID"`
 }
 
 type Location struct {
@@ -23,16 +22,16 @@ type Location struct {
 	Latitude        float32
 	Altitude        float32
 	IsMain          bool
-	Titles          []LocationString `gorm:"foreignKey:LocationID"`
-	Descriptions    []LocationString `gorm:"foreignKey:LocationID"`
+	Titles          []LocatedString `gorm:"foreignKey:ParentID"`
+	Descriptions    []LocatedString `gorm:"foreignKey:ParentID"`
 }
 
-type LocationString struct {
+type LocatedString struct {
 	gorm.Model
-	ID         int `gorm:"primary_key, AUTO_INCREMENT" json:"-"`
-	Value      string
-	Language   string
-	LocationID string `json:"-"`
+	ID       int `gorm:"primary_key, AUTO_INCREMENT" json:"-"`
+	Value    string
+	Language string
+	ParentID string `json:"-"`
 }
 
 type Language string
@@ -61,10 +60,10 @@ func (location *Location) UnmarshalJSON(data []byte) (err error) {
 	return err
 }
 
-func locationStringsFromMap(stringMap map[string]string) []LocationString {
-	var locationStrings []LocationString
+func locationStringsFromMap(stringMap map[string]string) []LocatedString {
+	var locationStrings []LocatedString
 	for k, v := range stringMap {
-		locationStrings = append(locationStrings, LocationString{
+		locationStrings = append(locationStrings, LocatedString{
 			Model:    gorm.Model{},
 			Value:    v,
 			Language: k,
