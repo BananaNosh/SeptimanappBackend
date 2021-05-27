@@ -17,11 +17,11 @@ func init() {
 		Latitude:        1000,
 		Altitude:        10,
 		IsMain:          true,
-		Titles: []types.LocationString{
+		Titles: []types.LocatedString{
 			{Value: "testTitle1de", Language: "de"},
 			{Value: "testTitle1la", Language: "la"},
 		},
-		Descriptions: []types.LocationString{
+		Descriptions: []types.LocatedString{
 			{Value: "testDesc1de", Language: "de"},
 			{Value: "testDesc1la", Language: "la"},
 		},
@@ -33,11 +33,11 @@ func init() {
 		Latitude:        1001,
 		Altitude:        1,
 		IsMain:          true,
-		Titles: []types.LocationString{
+		Titles: []types.LocatedString{
 			{Value: "testTitle2de", Language: "de"},
 			{Value: "testTitle2la", Language: "la"},
 		},
-		Descriptions: []types.LocationString{
+		Descriptions: []types.LocatedString{
 			{Value: "testDesc2de", Language: "de"},
 			{Value: "testDesc2la", Language: "la"},
 		},

@@ -37,14 +37,14 @@ func init() {
 	eventTime4.Hour = 21
 	var locale, _ = time.LoadLocation("Europe/Berlin")
 	horariumEvents := []WeekViewEvent{
-		{"e0", eventTime1, eventTime2, "test0"},
-		{"ev1", eventTime3, eventTime4, "test1"},
+		{"e0", eventTime1, eventTime2, "proba0"},
+		{"ev1", eventTime3, eventTime4, "proba1"},
 	}
 	horarium = Horarium{horariumEvents, "la"}
 
 	events = []types.Event{
-		{gorm.Model{ID: 0, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 0, eventTime1.ToTime(locale), eventTime2.ToTime(locale), "test0", "la"},
-		{gorm.Model{ID: 1, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 1, eventTime3.ToTime(locale), eventTime4.ToTime(locale), "test1", "la"},
+		{gorm.Model{ID: 0, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 0, eventTime1.ToTime(locale), eventTime2.ToTime(locale), []types.LocatedString{{Value: "test0", Language: "de"}, {Value: "proba0", Language: "la"}}},
+		{gorm.Model{ID: 1, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 1, eventTime3.ToTime(locale), eventTime4.ToTime(locale), []types.LocatedString{{Value: "test1", Language: "de"}, {Value: "proba1", Language: "la"}}},
 	}
 }
 
@@ -85,6 +85,9 @@ func init() {
 
 func TestHorarium_toEventList(t *testing.T) {
 	wantedEvents := events
+	for i := range wantedEvents {
+		wantedEvents[i].Names = wantedEvents[i].Names[1:2]
+	}
 	tests := []struct {
 		name     string
 		horarium Horarium
@@ -113,18 +116,11 @@ func TestHorarium_toEventList(t *testing.T) {
 }
 
 func Test_eventsFromJsonHoraria(t *testing.T) {
-	var wantedEventsDe []types.Event
-	var wantedEventsLa []types.Event
-	_ = copier.Copy(&wantedEventsDe, &events)
-	_ = copier.Copy(&wantedEventsLa, &events)
-	for i := range wantedEventsDe {
-		wantedEventsDe[i].ID = i + 10
-		wantedEventsDe[i].Model.ID = uint(i + 10)
-		wantedEventsDe[i].Language = "de"
-	}
-	for i := range wantedEventsLa {
-		wantedEventsLa[i].ID = i + 10 + 2
-		wantedEventsLa[i].Model.ID = uint(i + 10 + 2)
+	var wantedEvents []types.Event
+	_ = copier.Copy(&wantedEvents, &events)
+	for i := range wantedEvents {
+		wantedEvents[i].ID = i + 10
+		wantedEvents[i].Model.ID = uint(i + 10)
 	}
 	tests := []struct {
 		name         string
@@ -132,16 +128,16 @@ func Test_eventsFromJsonHoraria(t *testing.T) {
 		dataIdOffset int
 		want         []types.Event
 	}{
-		{"test1", "../data/testData/horariumHelper/", 10, append(wantedEventsDe, wantedEventsLa...)},
+		{"test1", "../data/testData/horariumHelper/", 10, wantedEvents},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			events := EventsFromJsonHoraria(tt.dataPath, tt.dataIdOffset)
+			events, err := EventsFromJsonHoraria(tt.dataPath, tt.dataIdOffset)
 			for i := range events {
 				events[i].Model.CreatedAt = time.Time{}
 				events[i].Model.UpdatedAt = time.Time{}
 			}
-			if got := events; !reflect.DeepEqual(got, tt.want) {
+			if got := events; !reflect.DeepEqual(got, tt.want) || err != nil {
 				t.Errorf("eventsFromJsonHoraria() = %v, want %v", got, tt.want)
 			}
 		})
