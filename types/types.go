@@ -11,7 +11,28 @@ type Event struct {
 	ID    int `gorm:"primary_key, AUTO_INCREMENT"`
 	Start time.Time
 	End   time.Time
-	Names []LocatedString `gorm:"foreignKey:ParentID"`
+	Names []LocatedString `gorm:"polymorphic:Parent;"`
+}
+
+func (event Event) MarshalJSON() ([]byte, error) {
+	/**
+	Unmarshal json bytes to location
+	*/
+	namesMap := make(map[string]string, len(event.Names))
+	for _, name := range event.Names {
+		namesMap[name.Language] = name.Value
+	}
+	return json.Marshal(struct {
+		Id    int
+		Start int64
+		End   int64
+		Names map[string]string
+	}{
+		Id:    event.ID,
+		Start: event.Start.Unix(),
+		End:   event.End.Unix(),
+		Names: namesMap,
+	})
 }
 
 type Location struct {
@@ -22,16 +43,17 @@ type Location struct {
 	Latitude        float32
 	Altitude        float32
 	IsMain          bool
-	Titles          []LocatedString `gorm:"foreignKey:ParentID"`
-	Descriptions    []LocatedString `gorm:"foreignKey:ParentID"`
+	Titles          []LocatedString `gorm:"polymorphic:Parent;"`
+	Descriptions    []LocatedString `gorm:"polymorphic:Parent;"`
 }
 
 type LocatedString struct {
 	gorm.Model
-	ID       int `gorm:"primary_key, AUTO_INCREMENT" json:"-"`
-	Value    string
-	Language string
-	ParentID string `json:"-"`
+	ID         int `gorm:"primary_key, AUTO_INCREMENT" json:"-"`
+	Value      string
+	Language   string
+	ParentID   string `json:"-"`
+	ParentType string `json:"-"`
 }
 
 type Language string

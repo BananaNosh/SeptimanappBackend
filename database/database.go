@@ -3,10 +3,12 @@ package database
 import (
 	"SeptimanappBackend/types"
 	"SeptimanappBackend/util"
+	"errors"
 	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"path"
+	"strconv"
 	"time"
 )
 
@@ -29,10 +31,7 @@ func InitDatabase() {
 	//		LogLevel:      logger.Info, // Log level
 	//	},
 	//)
-	db, err := gorm.Open(sqlite.Open(path.Join(dataPath, "septimana.db")), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true,
-		//Logger: newLogger,
-	})
+	db, err := openDB()
 	if err != nil {
 		fmt.Println(err.Error())
 		panic("failed to connect database")
@@ -66,4 +65,81 @@ func InitDatabase() {
 	//}
 	db.Create(locations)
 
+}
+
+func openDB() (*gorm.DB, error) {
+	return gorm.Open(sqlite.Open(path.Join(dataPath, "septimana.db")), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+		//Logger: newLogger,
+	})
+}
+
+func GetEvent(id int) (*types.Event, error) {
+	db, err := openDB()
+	if err != nil {
+		return nil, errors.New("couldn't open database")
+	}
+
+	var event types.Event
+	err = db.Find(&event, id).Error
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	var locatedStrings []types.LocatedString
+	err = db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Where("parent_id = ?", id).Find(&locatedStrings).Error
+	if err != nil {
+		fmt.Print(err)
+	}
+	event.Names = locatedStrings
+	return &event, nil
+}
+
+func GetEvents(year *int) ([]types.Event, error) {
+	db, err := openDB()
+	if err != nil {
+		return nil, errors.New("couldn't open database")
+	}
+
+	var events []types.Event
+	eventsMap := make(map[int]types.Event, len(events))
+	var locatedStrings []types.LocatedString
+	if year != nil {
+		err = db.Where("strftime('%Y', DATE(start)) = ?", *year).Find(&events).Error
+		if err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		db.Find(&events)
+	}
+	for _, e := range events {
+		eventsMap[e.ID] = e
+	}
+	db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Find(&locatedStrings)
+
+	for _, locString := range locatedStrings {
+		parentID, err := strconv.Atoi(locString.ParentID)
+		if err == nil {
+			event, ok := eventsMap[parentID]
+			if ok {
+				event.Names = append(event.Names, locString)
+				eventsMap[parentID] = event
+			}
+		}
+	}
+	events = nil
+	for _, e := range eventsMap {
+		events = append(events, e)
+	}
+
+	//db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})
+	//db.Joins("Names").Find(&events)
+	//db.Preload("Names").Find(&events)
+	//var pairs []struct{
+	//	event *types.Event
+	//	locatedString *types.LocatedString
+	//}
+	//db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = events.id").Find(&pairs)
+	//fmt.Println(pairs)
+	return events, nil
 }
