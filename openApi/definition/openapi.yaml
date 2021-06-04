@@ -34,11 +34,6 @@
               minimum: 2018
               maximum: 2020
               example: 2019
-          - name: lang
-            description: "if given only events in this language are returned"
-            in: query
-            schema:
-              $ref: "./types.yaml#/components/schemas/language"
         responses:
           200:
             description: 'returns the events of the septimana for all or a specific year'

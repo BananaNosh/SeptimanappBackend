@@ -18,9 +18,6 @@ type GetEventsParams struct {
 
 	// if given only events of this year are returned
 	Year *int `json:"year,omitempty"`
-
-	// if given only events in this language are returned
-	Lang *externalRef0.Language `json:"lang,omitempty"`
 }
 
 // PostEventsJSONBody defines parameters for PostEvents.
@@ -64,13 +61,6 @@ func (w *ServerInterfaceWrapper) GetEvents(ctx echo.Context) error {
 	err = runtime.BindQueryParameter("form", true, false, "year", ctx.QueryParams(), &params.Year)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter year: %s", err))
-	}
-
-	// ------------- Optional query parameter "lang" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "lang", ctx.QueryParams(), &params.Lang)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter lang: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
