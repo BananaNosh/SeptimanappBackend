@@ -27,7 +27,12 @@ func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 }
 
 func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
-	panic("implement me")
+	event, err := database.GetEvent(id)
+	if err == nil {
+		return ctx.JSON(http.StatusOK, event)
+	} else {
+		return ctx.String(500, "There was an error with the database")
+	}
 }
 
 func (s SeptimanappRestApi) GetLocations(ctx echo.Context) error {
