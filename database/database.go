@@ -105,10 +105,7 @@ func GetEvents(year *int) ([]types.Event, error) {
 	eventsMap := make(map[int]types.Event, len(events))
 	var locatedStrings []types.LocatedString
 	if year != nil {
-		err = db.Where("strftime('%Y', DATE(start)) = ?", *year).Find(&events).Error
-		if err != nil {
-			fmt.Println(err)
-		}
+		db.Where("SUBSTR(start, 1, 4) = ?", strconv.Itoa(*year)).Find(&events) // TODO make nicer if possible
 	} else {
 		db.Find(&events)
 	}
