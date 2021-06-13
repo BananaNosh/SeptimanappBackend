@@ -14,9 +14,11 @@ type Event struct {
 	Names []LocatedString `gorm:"polymorphic:Parent;"`
 }
 
+type Events []Event
+
 func (event Event) MarshalJSON() ([]byte, error) {
 	/**
-	Unmarshal json bytes to location
+	Marshal Event to json
 	*/
 	namesMap := make(map[string]string, len(event.Names))
 	for _, name := range event.Names {
@@ -33,6 +35,33 @@ func (event Event) MarshalJSON() ([]byte, error) {
 		End:   event.End.Unix(),
 		Names: namesMap,
 	})
+}
+
+func (event *Event) UnmarshalJSON(data []byte) error {
+	/**
+	Marshal Event to json
+	*/
+	var aux struct {
+		Id    int
+		Start int64
+		End   int64
+		Names map[string]string
+	}
+	err := json.Unmarshal(data, &aux)
+	if err != nil {
+		return err
+	}
+	event.ID = aux.Id
+	event.Start = time.Unix(aux.Start, 0)
+	event.End = time.Unix(aux.End, 0)
+
+	for language, name := range aux.Names {
+		event.Names = append(event.Names, LocatedString{
+			Value:    name,
+			Language: language,
+		})
+	}
+	return nil
 }
 
 type Location struct {

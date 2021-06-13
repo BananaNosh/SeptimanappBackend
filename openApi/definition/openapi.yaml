@@ -48,14 +48,15 @@
           content:
             application/json:
               schema:
-                $ref: "./types.yaml#/components/schemas/event"
+                $ref: "./types.yaml#/components/schemas/events"
         responses:
           200:
             description: "Saves the posted events"
             content:
-              application/json:
+              text/plain:
                 schema:
-                  $ref: "./types.yaml#/components/schemas/events"
+                  type: string
+                  example: "OK"
 
     /locations/{id}:
       get:

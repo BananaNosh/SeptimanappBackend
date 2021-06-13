@@ -21,7 +21,7 @@ type GetEventsParams struct {
 }
 
 // PostEventsJSONBody defines parameters for PostEvents.
-type PostEventsJSONBody externalRef0.Event
+type PostEventsJSONBody externalRef0.Events
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody PostEventsJSONBody
