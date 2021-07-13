@@ -64,16 +64,18 @@ func (event *Event) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type OverallLocation string
+
 type Location struct {
 	gorm.Model
 	ID              string `gorm:"primary_key"`
-	OverallLocation string
+	OverallLocation OverallLocation
 	Longitude       float32
 	Latitude        float32
 	Altitude        float32
 	IsMain          bool
-	Titles          []LocatedString `gorm:"polymorphic:Parent;"`
-	Descriptions    []LocatedString `gorm:"polymorphic:Parent;"`
+	Titles          []LocatedString `gorm:"polymorphic:Parent;polymorphicValue:locations_title"`
+	Descriptions    []LocatedString `gorm:"polymorphic:Parent;polymorphicValue:locations_description"`
 }
 
 type LocatedString struct {

@@ -74,6 +74,12 @@
                 schema:
                   $ref: "./types.yaml#/components/schemas/location"
     /locations:
+      parameters:
+      - name: overallLocation
+        description: "if given only locations of this overallLocation are returned"
+        in: query
+        schema:
+          $ref: "./types.yaml#/components/schemas/overallLocation"
       get:
         responses:
           200:

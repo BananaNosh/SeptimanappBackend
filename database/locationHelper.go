@@ -31,7 +31,7 @@ func LocationsFromJsonFiles(dataPath string) []types.Location {
 			if locations, err := readLocationsFromFile(filePath); err == nil {
 				// set correct overallLocation
 				for i := range locations {
-					locations[i].OverallLocation = overallLocation
+					locations[i].OverallLocation = types.OverallLocation(overallLocation)
 				}
 				allLocations = append(allLocations, locations...)
 			}

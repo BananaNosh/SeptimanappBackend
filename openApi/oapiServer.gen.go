@@ -23,6 +23,13 @@ type GetEventsParams struct {
 // PostEventsJSONBody defines parameters for PostEvents.
 type PostEventsJSONBody externalRef0.Events
 
+// GetLocationsParams defines parameters for GetLocations.
+type GetLocationsParams struct {
+
+	// if given only locations of this overallLocation are returned
+	OverallLocation *externalRef0.OverallLocation `json:"overallLocation,omitempty"`
+}
+
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody PostEventsJSONBody
 
@@ -39,7 +46,7 @@ type ServerInterface interface {
 	GetEventsId(ctx echo.Context, id int) error
 
 	// (GET /locations)
-	GetLocations(ctx echo.Context) error
+	GetLocations(ctx echo.Context, params GetLocationsParams) error
 
 	// (GET /locations/{id})
 	GetLocationsId(ctx echo.Context, id string) error
@@ -97,8 +104,17 @@ func (w *ServerInterfaceWrapper) GetEventsId(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetLocations(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetLocationsParams
+	// ------------- Optional query parameter "overallLocation" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "overallLocation", ctx.QueryParams(), &params.OverallLocation)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter overallLocation: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetLocations(ctx)
+	err = w.Handler.GetLocations(ctx, params)
 	return err
 }
 

@@ -81,15 +81,18 @@ func GetEvent(id int) (*types.Event, error) {
 	}
 
 	var event types.Event
-	err = db.Find(&event, id).Error
+	err = db.First(&event, id).Error
 	if err != nil {
-		fmt.Print(err)
+		if err.Error() == "record not found" {
+			return nil, nil
+		}
+		return nil, err
 	}
 
 	var locatedStrings []types.LocatedString
 	err = db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Where("parent_id = ?", id).Find(&locatedStrings).Error
 	if err != nil {
-		fmt.Print(err)
+		return nil, err
 	}
 	event.Names = locatedStrings
 	return &event, nil
@@ -139,4 +142,78 @@ func GetEvents(year *int) ([]types.Event, error) {
 	//db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = events.id").Find(&pairs)
 	//fmt.Println(pairs)
 	return events, nil
+}
+
+func GetLocation(id string) (*types.Location, error) {
+	db, err := openDB()
+	if err != nil {
+		return nil, errors.New("couldn't open database")
+	}
+
+	var location types.Location
+	err = db.First(&location, "id = ?", id).Error
+	if err != nil {
+		if err.Error() == "record not found" {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var titles []types.LocatedString
+	var descriptions []types.LocatedString
+	err = db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Where("parent_id = ?", id).Find(&titles).Error
+	if err != nil {
+		return nil, err
+	}
+	err = db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Where("parent_id = ?", id).Find(&titles).Error
+	if err != nil {
+		return nil, err
+	}
+	location.Titles = titles
+	location.Titles = descriptions
+	return &location, nil
+}
+
+func GetLocations(overallLocation *types.OverallLocation) ([]types.Location, error) {
+	db, err := openDB()
+	if err != nil {
+		return nil, errors.New("couldn't open database")
+	}
+
+	var locations []types.Location
+	locationsMap := make(map[string]types.Location, len(locations))
+	var titles []types.LocatedString
+	if overallLocation != nil {
+		db.Where("overall_location = ?", *overallLocation).Find(&locations)
+	} else {
+		db.Find(&locations)
+	}
+	for _, l := range locations {
+		locationsMap[l.ID] = l
+	}
+	db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Find(&titles)
+
+	for _, title := range titles {
+		parentID := title.ParentID
+		location, ok := locationsMap[parentID]
+		if ok {
+			location.Titles = append(location.Titles, title)
+			locationsMap[parentID] = location
+		}
+	}
+	locations = nil
+	for _, l := range locationsMap {
+		locations = append(locations, l)
+	}
+
+	//db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})
+	//db.Joins("Names").Find(&locations)
+	//db.Preload("Names").Find(&locations)
+	//var pairs []struct{
+	//	event *types.Event
+	//	locatedString *types.LocatedString
+	//}
+	//db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = locations.id").Find(&pairs)
+	//fmt.Println(pairs)
+	return locations, nil
 }

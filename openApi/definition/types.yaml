@@ -41,9 +41,7 @@ components:
         id:
           type: string
         overallLocation:
-          type: string
-          enum: ["amoeneburg", "braunfels"]
-          example: "braunfels"
+          $ref: "#/components/schemas/overallLocation"
         longitude:
           type: number
           format: float
@@ -69,6 +67,11 @@ components:
       type: string
       enum: [ "de", "la" ]
       example: "la"
+
+    overallLocation:
+      type: string
+      enum: [ "amoeneburg", "braunfels" ]
+      example: "braunfels"
 
     stringMap:
       type: object

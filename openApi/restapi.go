@@ -56,12 +56,22 @@ func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
 	}
 }
 
-func (s SeptimanappRestApi) GetLocations(ctx echo.Context) error {
-	panic("implement me")
+func (s SeptimanappRestApi) GetLocations(ctx echo.Context, params GetLocationsParams) error {
+	location, err := database.GetLocations(params.OverallLocation)
+	if err == nil {
+		return ctx.JSON(http.StatusOK, location)
+	} else {
+		return sendInternalError(ctx)
+	}
 }
 
 func (s SeptimanappRestApi) GetLocationsId(ctx echo.Context, id string) error {
-	panic("implement me")
+	location, err := database.GetLocation(id)
+	if err == nil {
+		return ctx.JSON(http.StatusOK, location)
+	} else {
+		return sendInternalError(ctx)
+	}
 }
 
 func SetupDocumentationRoutes(e *echo.Echo) {
@@ -78,6 +88,21 @@ func SetupRestRoutes(e *echo.Echo) {
 }
 
 func StartRestApi() {
+	start := time.Now()
+	year := 2020
+	events, err := database.GetEvents(&year)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Print("Events\n")
+		fmt.Println(len(events))
+		if len(events) > 0 {
+			fmt.Println(events[0].Start)
+		}
+	}
+
+	fmt.Printf("%d mikro s\n", time.Since(start)/1000)
+	fmt.Println("START REST:")
 	e := echo.New()
 	SetupDocumentationRoutes(e)
 	SetupRestRoutes(e)
