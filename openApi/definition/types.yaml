@@ -21,15 +21,12 @@ components:
         end:
           type: integer
           description: "The end time of the event as UNIX timestamp"
-        name:
-          type: string
-          description: "The name/description of the event"
-        language:
-          type: string
-          description: "The language of the name of the event"
-        location:
-          type: string
-          description: "The location of the event"
+        names:
+          $ref: "#/components/schemas/stringMap"
+          description: "Map containing a name/description of the event for given languages"
+#        location:
+#          type: string
+#          description: "The location of the event"
     events:
       type: array
       items:
@@ -42,6 +39,7 @@ components:
           type: string
         overallLocation:
           $ref: "#/components/schemas/overallLocation"
+          description: "The main city or place which the location belong to"
         longitude:
           type: number
           format: float
@@ -53,10 +51,13 @@ components:
           format: float
         isMain:
           type: boolean
+          description: "true if the location is the main meeting-building"
         titleMap:
           $ref: "#/components/schemas/stringMap"
+          description: "Map containing the title of the location for given languages"
         descriptionMap:
           $ref: "#/components/schemas/stringMap"
+          description: "Map containing the description(if given) of the location for given languages"
 
     locations:
       type: array
