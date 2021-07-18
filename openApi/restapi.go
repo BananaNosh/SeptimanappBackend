@@ -8,6 +8,8 @@ import (
 	"github.com/swaggo/echo-swagger"
 	"net/http"
 	"time"
+
+	"github.com/deepmap/oapi-codegen/pkg/middleware"
 )
 
 const serverAddress = "localhost:8080"
@@ -42,6 +44,7 @@ func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 	fmt.Println(events)
 	if err != nil {
 		fmt.Println("Not validated")
+		fmt.Println(err)
 		return ctx.String(http.StatusBadRequest, "Invalid format for events")
 	}
 	return sendOK(ctx)
@@ -104,7 +107,15 @@ func StartRestApi() {
 	fmt.Printf("%d mikro s\n", time.Since(start)/1000)
 	fmt.Println("START REST:")
 	e := echo.New()
+
+	swagger, err := GetSwagger()
+	if err != nil {
+		panic(err)
+	}
+	e.Use(middleware.OapiRequestValidator(swagger))
+
 	SetupDocumentationRoutes(e)
 	SetupRestRoutes(e)
+
 	e.Logger.Fatal(e.Start(serverAddress))
 }
