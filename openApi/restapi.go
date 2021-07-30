@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/swaggo/echo-swagger"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
@@ -112,7 +113,16 @@ func StartRestApi() {
 	if err != nil {
 		panic(err)
 	}
-	e.Use(middleware.OapiRequestValidator(swagger))
+	e.Use(middleware.OapiRequestValidatorWithOptions(swagger, &middleware.Options{
+		Skipper: func(ctx echo.Context) bool {
+			print(ctx.Path())
+			if strings.HasPrefix(ctx.Path(), "/openapi/definition") {
+				return true
+			}
+			//return strings.HasPrefix(ctx.Request().Host, "localhost")
+			return false
+		},
+	}))
 
 	SetupDocumentationRoutes(e)
 	SetupRestRoutes(e)
