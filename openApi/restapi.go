@@ -123,8 +123,8 @@ func StartRestApi() {
 	}
 	e.Use(middleware.OapiRequestValidatorWithOptions(swagger, &middleware.Options{
 		Skipper: func(ctx echo.Context) bool {
-			print(ctx.Path())
-			if strings.HasPrefix(ctx.Path(), "/openapi/definition") {
+			//print(ctx.Path())
+			if strings.HasPrefix(ctx.Path(), "/openapi/definition") || strings.HasPrefix(ctx.Path(), "/definition") {
 				return true
 			}
 			//return strings.HasPrefix(ctx.Request().Host, "localhost")
