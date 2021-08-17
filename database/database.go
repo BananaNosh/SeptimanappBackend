@@ -65,19 +65,24 @@ func InitDatabase() {
 	//}
 	db.Create(locations)
 
+	err = db.AutoMigrate(types.ApiKeyInfo{})
 }
 
 func openDB() (*gorm.DB, error) {
-	return gorm.Open(sqlite.Open(path.Join(dataPath, "septimana.db")), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(path.Join(dataPath, "septimana.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 		//Logger: newLogger,
 	})
+	if err != nil {
+		return db, errors.New("couldn't open database")
+	}
+	return db, nil
 }
 
 func GetEvent(id int) (*types.Event, error) {
 	db, err := openDB()
 	if err != nil {
-		return nil, errors.New("couldn't open database")
+		return nil, err
 	}
 
 	var event types.Event
@@ -101,7 +106,7 @@ func GetEvent(id int) (*types.Event, error) {
 func GetEvents(year *int) ([]types.Event, error) {
 	db, err := openDB()
 	if err != nil {
-		return nil, errors.New("couldn't open database")
+		return nil, err
 	}
 
 	var events []types.Event
@@ -147,7 +152,7 @@ func GetEvents(year *int) ([]types.Event, error) {
 func GetLocation(id string) (*types.Location, error) {
 	db, err := openDB()
 	if err != nil {
-		return nil, errors.New("couldn't open database")
+		return nil, err
 	}
 
 	var location types.Location
@@ -177,7 +182,7 @@ func GetLocation(id string) (*types.Location, error) {
 func GetLocations(overallLocation *types.OverallLocation) ([]types.Location, error) {
 	db, err := openDB()
 	if err != nil {
-		return nil, errors.New("couldn't open database")
+		return nil, err
 	}
 
 	var locations []types.Location
@@ -216,4 +221,24 @@ func GetLocations(overallLocation *types.OverallLocation) ([]types.Location, err
 	//db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = locations.id").Find(&pairs)
 	//fmt.Println(pairs)
 	return locations, nil
+}
+
+func StoreSecurityInfo(info types.ApiKeyInfo) error {
+	db, err := openDB()
+	if err != nil {
+		return errors.New("couldn't open database")
+	}
+
+	db.Create(info)
+	return nil
+}
+
+func HasApiKeyInfo(info types.ApiKeyInfo) (bool, error) {
+	db, err := openDB()
+	if err != nil {
+		return false, err
+	}
+
+	result := db.First(&info, "api_key = ?", info.ApiKeyHash)
+	return !errors.Is(result.Error, gorm.ErrRecordNotFound), nil
 }

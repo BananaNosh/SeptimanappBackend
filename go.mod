@@ -5,6 +5,9 @@ go 1.13
 require (
 	github.com/deepmap/oapi-codegen v1.6.1
 	github.com/getkin/kin-openapi v0.60.0
+	github.com/go-playground/universal-translator v0.18.0 // indirect
+	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/google/uuid v1.3.0
 	//github.com/gin-gonic/gin v1.7.1
 	//github.com/go-openapi/errors v0.20.0
 	//github.com/go-openapi/loads v0.20.2
@@ -15,8 +18,10 @@ require (
 	//github.com/jessevdk/go-flags v1.5.0
 	github.com/jinzhu/copier v0.2.8
 	github.com/labstack/echo/v4 v4.2.2
+	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/swaggo/echo-swagger v1.1.0
-	gorm.io/datatypes v1.0.1
+	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	//golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.6

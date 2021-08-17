@@ -124,3 +124,7 @@ func locationStringsFromMap(stringMap map[string]string) []LocatedString {
 	}
 	return locationStrings
 }
+
+type ApiKeyInfo struct {
+	ApiKeyHash string `gorm:"primary_key,column:api_key"`
+}

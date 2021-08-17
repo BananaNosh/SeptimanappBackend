@@ -1,93 +1,105 @@
-  openapi: "3.0.0"
-  info:
-    description: HTTP server for the Septimana Latina Backend
+openapi: "3.0.0"
+info:
+  description: HTTP server for the Septimana Latina Backend
 
-    title: septimanapp-backend-http
+  title: septimanapp-backend-http
 
-    version: 0.2.0
+  version: 0.2.0
 
 
-  paths:
-    /events/{id}:
-      get:
-        parameters:
-          - name: id
-            schema:
-              type: integer
-            in: path
-            required: true
-        responses:
-          200:
-            description: "Returns the event with the given id"
-            content:
-              application/json:
-                schema:
-                  $ref: "./types.yaml#/components/schemas/event"
-    /events:
-      get:
-        parameters:
-          - name: year
-            description: "if given only events of this year are returned"
-            in: query
-            schema:
-              type: integer
-              minimum: 2018
-              maximum: 2020
-              example: 2019
-        responses:
-          200:
-            description: 'returns the events of the septimana for all or a specific year'
-            content:
-              application/json:
-                schema:
-                  $ref: "./types.yaml#/components/schemas/events"
 
-      post:
-        requestBody:
+paths:
+  /events/{id}:
+    get:
+      parameters:
+        - name: id
+          schema:
+            type: integer
+          in: path
           required: true
+      responses:
+        200:
+          description: "Returns the event with the given id"
+          content:
+            application/json:
+              schema:
+                $ref: "./types.yaml#/components/schemas/event"
+  /events:
+    get:
+      parameters:
+        - name: year
+          description: "if given only events of this year are returned"
+          in: query
+          schema:
+            type: integer
+            minimum: 2018
+            maximum: 2020
+            example: 2019
+      responses:
+        200:
+          description: 'returns the events of the septimana for all or a specific year'
           content:
             application/json:
               schema:
                 $ref: "./types.yaml#/components/schemas/events"
-        responses:
-          200:
-            description: "Saves the posted events"
-            content:
-              text/plain:
-                schema:
-                  type: string
-                  example: "OK"
 
-    /locations/{id}:
-      get:
-        parameters:
-          - name: id
+    post:
+      security:
+        - app_id: []
+      requestBody:
+        required: true
+        content:
+          application/json:
             schema:
-              type: string
-            in: path
-            required: true
-        responses:
-          200:
-            description: "Returns the location with the given id"
-            content:
-              application/json:
-                schema:
-                  $ref: "./types.yaml#/components/schemas/location"
-    /locations:
+              $ref: "./types.yaml#/components/schemas/events"
+      responses:
+        200:
+          description: "Saves the posted events"
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+
+  /locations/{id}:
+    get:
       parameters:
+        - name: id
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        200:
+          description: "Returns the location with the given id"
+          content:
+            application/json:
+              schema:
+                $ref: "./types.yaml#/components/schemas/location"
+  /locations:
+    parameters:
       - name: overallLocation
         description: "if given only locations of this overallLocation are returned"
         in: query
         schema:
           $ref: "./types.yaml#/components/schemas/overallLocation"
-      get:
-        responses:
-          200:
-            description: "Returns all locations"
-            content:
-              application/json:
-                schema:
-                  $ref: "./types.yaml#/components/schemas/locations"
+    get:
+      responses:
+        200:
+          description: "Returns all locations"
+          content:
+            application/json:
+              schema:
+                $ref: "./types.yaml#/components/schemas/locations"
+
+
+components:
+  securitySchemes:
+    app_id:
+      type: apiKey
+      description: API key to authorize requests.
+      name: appid
+      in: query
 
 
 #    /hostname:

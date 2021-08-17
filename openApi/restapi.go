@@ -4,13 +4,14 @@ import (
 	"SeptimanappBackend/database"
 	"SeptimanappBackend/types"
 	"fmt"
+	"github.com/deepmap/oapi-codegen/pkg/middleware"
+	"github.com/getkin/kin-openapi/openapi3filter"
+	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/swaggo/echo-swagger"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/deepmap/oapi-codegen/pkg/middleware"
 )
 
 const serverAddress = "localhost:8080"
@@ -40,7 +41,8 @@ func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 	if err != nil || len(events) == 0 {
 		return ctx.String(http.StatusBadRequest, "Invalid format for events")
 	}
-	err = ctx.Validate([]types.Event{})
+	err = validator.New().Struct(events)
+	//err = ctx.Validate([]types.Event{})
 	fmt.Println("POSTED:")
 	fmt.Println(events)
 	if err != nil {
@@ -49,6 +51,10 @@ func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, "Invalid format for events")
 	}
 	return sendOK(ctx)
+}
+
+func (s SeptimanappRestApi) AuthorizePostEvents(key string, ctx echo.Context) (bool, error) {
+	return key == "valid", nil
 }
 
 func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
@@ -88,7 +94,9 @@ func SetupDocumentationRoutes(e *echo.Echo) {
 }
 
 func SetupRestRoutes(e *echo.Echo) {
-	RegisterHandlers(e, SeptimanappRestApi{})
+	api := SeptimanappRestApi{}
+	RegisterHandlers(e, api)
+	RegisterAuthMiddleware(e, api) // TODO remove if codegen provides the corresponding part
 }
 
 func StartRestApi() {
@@ -121,6 +129,9 @@ func StartRestApi() {
 			}
 			//return strings.HasPrefix(ctx.Request().Host, "localhost")
 			return false
+		},
+		Options: openapi3filter.Options{
+			AuthenticationFunc: openapi3filter.NoopAuthenticationFunc,
 		},
 	}))
 

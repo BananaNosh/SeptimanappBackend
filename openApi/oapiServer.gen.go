@@ -13,6 +13,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const (
+	App_idScopes = "app_id.Scopes"
+)
+
 // GetEventsParams defines parameters for GetEvents.
 type GetEventsParams struct {
 
@@ -78,6 +82,8 @@ func (w *ServerInterfaceWrapper) GetEvents(ctx echo.Context) error {
 // PostEvents converts echo context to params.
 func (w *ServerInterfaceWrapper) PostEvents(ctx echo.Context) error {
 	var err error
+
+	ctx.Set(App_idScopes, []string{"lol"})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.PostEvents(ctx)
