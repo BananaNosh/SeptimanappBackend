@@ -29,13 +29,15 @@ func StoreNewApiKey() {
 	info := types.ApiKeyInfo{
 		ApiKeyHash: key,
 	}
-	database.StoreSecurityInfo(info)
+	if err := database.StoreSecurityInfo(info); err != nil {
+		fmt.Println(err)
+	}
 }
 
-func ValidateApikey(key string) bool {
+func ValidateApikey(key string) (bool, error) {
 	hasKey, err := database.HasApiKeyInfo(
 		types.ApiKeyInfo{
 			ApiKeyHash: HashKey(key),
 		})
-	return err == nil && hasKey
+	return hasKey, err
 }

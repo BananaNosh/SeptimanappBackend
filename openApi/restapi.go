@@ -1,7 +1,9 @@
 package Openapi
 
+import "C"
 import (
 	"SeptimanappBackend/database"
+	"SeptimanappBackend/security"
 	"SeptimanappBackend/types"
 	"fmt"
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
@@ -10,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/swaggo/echo-swagger"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -17,6 +20,28 @@ import (
 const serverAddress = "localhost:8080"
 
 type SeptimanappRestApi struct{}
+
+type Validator struct {
+	validator *validator.Validate
+}
+
+func (v *Validator) Validate(i interface{}) error {
+	if reflect.TypeOf(i).Kind() == reflect.Slice {
+		if reflect.ValueOf(i).Len() > 0 && reflect.ValueOf(i).Index(0).FieldByName("ID").IsValid() {
+			return v.validator.Var(i, "required,unique=ID,dive")
+		}
+		return v.validator.Var(i, "required,min=1,dive")
+		//s := reflect.ValueOf(i)
+		//for i := 0; i < s.Len(); i++ {
+		//	if err := v.validator.Struct(s.Index(i).Interface()); err != nil {
+		//		return err
+		//	}
+		//}
+		//return nil
+	} else {
+		return v.validator.Struct(i)
+	}
+}
 
 func sendOK(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "OK")
@@ -38,11 +63,10 @@ func (s SeptimanappRestApi) GetEvents(ctx echo.Context, params GetEventsParams) 
 func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 	var events []types.Event
 	err := ctx.Bind(&events)
-	if err != nil || len(events) == 0 {
+	if err != nil {
 		return ctx.String(http.StatusBadRequest, "Invalid format for events")
 	}
-	err = validator.New().Struct(events)
-	//err = ctx.Validate([]types.Event{})
+	err = ctx.Validate(events)
 	fmt.Println("POSTED:")
 	fmt.Println(events)
 	if err != nil {
@@ -54,7 +78,7 @@ func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 }
 
 func (s SeptimanappRestApi) AuthorizePostEvents(key string, ctx echo.Context) (bool, error) {
-	return key == "valid", nil
+	return security.ValidateApikey(key)
 }
 
 func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
@@ -116,6 +140,7 @@ func StartRestApi() {
 	fmt.Printf("%d mikro s\n", time.Since(start)/1000)
 	fmt.Println("START REST:")
 	e := echo.New()
+	e.Validator = &Validator{validator: validator.New()}
 
 	swagger, err := GetSwagger()
 	if err != nil {
