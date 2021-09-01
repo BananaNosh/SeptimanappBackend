@@ -29,13 +29,15 @@ func StoreNewApiKey() {
 	info := types.ApiKeyInfo{
 		ApiKeyHash: key,
 	}
-	if err := database.StoreSecurityInfo(info); err != nil {
+	repository, err := database.GetRepository()
+	if err != nil {
 		fmt.Println(err)
 	}
+	repository.StoreSecurityInfo(info)
 }
 
-func ValidateApikey(key string) (bool, error) {
-	hasKey, err := database.HasApiKeyInfo(
+func ValidateApikey(repository *database.Repository, key string) (bool, error) {
+	hasKey, err := repository.HasApiKeyInfo(
 		types.ApiKeyInfo{
 			ApiKeyHash: HashKey(key),
 		})

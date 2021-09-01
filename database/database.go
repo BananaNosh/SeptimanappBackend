@@ -14,6 +14,18 @@ import (
 
 const dataPath = "./data"
 
+type Repository struct {
+	db *gorm.DB
+}
+
+func GetRepository() (*Repository, error) {
+	db, err := openDB()
+	if err != nil {
+		return nil, err
+	}
+	return &Repository{db: db}, nil
+}
+
 func insertStartEnd(db *gorm.DB) {
 	start := time.Date(2021, 7, 31, 16, 30, 0, 0, util.Locale())
 	end := time.Date(2021, 8, 7, 14, 0, 0, 0, util.Locale())
@@ -22,7 +34,7 @@ func insertStartEnd(db *gorm.DB) {
 
 }
 
-func InitDatabase() {
+func (rep *Repository) InitDatabase() {
 	fmt.Println("Init Database")
 	//newLogger := logger.New(
 	//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
@@ -31,14 +43,10 @@ func InitDatabase() {
 	//		LogLevel:      logger.Info, // Log level
 	//	},
 	//)
-	db, err := openDB()
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("failed to connect database")
-	}
+	db := rep.db
 
 	// Migrate the schema
-	err = db.AutoMigrate(&types.Event{}, &types.LocatedString{})
+	err := db.AutoMigrate(&types.Event{}, &types.LocatedString{})
 	if err != nil {
 		panic("failed to auto migrate database")
 	}
@@ -79,14 +87,9 @@ func openDB() (*gorm.DB, error) {
 	return db, nil
 }
 
-func GetEvent(id int) (*types.Event, error) {
-	db, err := openDB()
-	if err != nil {
-		return nil, err
-	}
-
+func (rep *Repository) GetEvent(id int) (*types.Event, error) {
 	var event types.Event
-	err = db.First(&event, id).Error
+	err := rep.db.First(&event, id).Error
 	if err != nil {
 		if err.Error() == "record not found" {
 			return nil, nil
@@ -95,7 +98,7 @@ func GetEvent(id int) (*types.Event, error) {
 	}
 
 	var locatedStrings []types.LocatedString
-	err = db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Where("parent_id = ?", id).Find(&locatedStrings).Error
+	err = rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Where("parent_id = ?", id).Find(&locatedStrings).Error
 	if err != nil {
 		return nil, err
 	}
@@ -103,24 +106,19 @@ func GetEvent(id int) (*types.Event, error) {
 	return &event, nil
 }
 
-func GetEvents(year *int) ([]types.Event, error) {
-	db, err := openDB()
-	if err != nil {
-		return nil, err
-	}
-
+func (rep *Repository) GetEvents(year *int) ([]types.Event, error) {
 	var events []types.Event
 	eventsMap := make(map[int]types.Event, len(events))
 	var locatedStrings []types.LocatedString
 	if year != nil {
-		db.Where("SUBSTR(start, 1, 4) = ?", strconv.Itoa(*year)).Find(&events) // TODO make nicer if possible
+		rep.db.Where("SUBSTR(start, 1, 4) = ?", strconv.Itoa(*year)).Find(&events) // TODO make nicer if possible
 	} else {
-		db.Find(&events)
+		rep.db.Find(&events)
 	}
 	for _, e := range events {
 		eventsMap[e.ID] = e
 	}
-	db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Find(&locatedStrings)
+	rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Find(&locatedStrings)
 
 	for _, locString := range locatedStrings {
 		parentID, err := strconv.Atoi(locString.ParentID)
@@ -137,26 +135,21 @@ func GetEvents(year *int) ([]types.Event, error) {
 		events = append(events, e)
 	}
 
-	//db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})
-	//db.Joins("Names").Find(&events)
-	//db.Preload("Names").Find(&events)
+	//rep.db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})
+	//rep.db.Joins("Names").Find(&events)
+	//rep.db.Preload("Names").Find(&events)
 	//var pairs []struct{
 	//	event *types.Event
 	//	locatedString *types.LocatedString
 	//}
-	//db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = events.id").Find(&pairs)
+	//rep.db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = events.id").Find(&pairs)
 	//fmt.Println(pairs)
 	return events, nil
 }
 
-func GetLocation(id string) (*types.Location, error) {
-	db, err := openDB()
-	if err != nil {
-		return nil, err
-	}
-
+func (rep *Repository) GetLocation(id string) (*types.Location, error) {
 	var location types.Location
-	err = db.First(&location, "id = ?", id).Error
+	err := rep.db.First(&location, "id = ?", id).Error
 	if err != nil {
 		if err.Error() == "record not found" {
 			return nil, nil
@@ -166,11 +159,11 @@ func GetLocation(id string) (*types.Location, error) {
 
 	var titles []types.LocatedString
 	var descriptions []types.LocatedString
-	err = db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Where("parent_id = ?", id).Find(&titles).Error
+	err = rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Where("parent_id = ?", id).Find(&titles).Error
 	if err != nil {
 		return nil, err
 	}
-	err = db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Where("parent_id = ?", id).Find(&titles).Error
+	err = rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Where("parent_id = ?", id).Find(&titles).Error
 	if err != nil {
 		return nil, err
 	}
@@ -179,25 +172,21 @@ func GetLocation(id string) (*types.Location, error) {
 	return &location, nil
 }
 
-func GetLocations(overallLocation *types.OverallLocation) ([]types.Location, error) {
-	db, err := openDB()
-	if err != nil {
-		return nil, err
-	}
-
+func (rep *Repository) GetLocations(overallLocation *types.OverallLocation) ([]types.Location, error) {
 	var locations []types.Location
 	locationsMap := make(map[string]types.Location, len(locations))
 	var titles []types.LocatedString
+	var descriptions []types.LocatedString
 	if overallLocation != nil {
-		db.Where("overall_location = ?", *overallLocation).Find(&locations)
+		rep.db.Where("overall_location = ?", *overallLocation).Find(&locations)
 	} else {
-		db.Find(&locations)
+		rep.db.Find(&locations)
 	}
 	for _, l := range locations {
 		locationsMap[l.ID] = l
 	}
-	db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Find(&titles)
 
+	rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Find(&titles)
 	for _, title := range titles {
 		parentID := title.ParentID
 		location, ok := locationsMap[parentID]
@@ -206,6 +195,17 @@ func GetLocations(overallLocation *types.OverallLocation) ([]types.Location, err
 			locationsMap[parentID] = location
 		}
 	}
+
+	rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Find(&descriptions)
+	for _, description := range descriptions {
+		parentID := description.ParentID
+		location, ok := locationsMap[parentID]
+		if ok {
+			location.Descriptions = append(location.Descriptions, description)
+			locationsMap[parentID] = location
+		}
+	}
+
 	locations = nil
 	for _, l := range locationsMap {
 		locations = append(locations, l)
@@ -223,22 +223,15 @@ func GetLocations(overallLocation *types.OverallLocation) ([]types.Location, err
 	return locations, nil
 }
 
-func StoreSecurityInfo(info types.ApiKeyInfo) error {
-	db, err := openDB()
-	if err != nil {
-		return errors.New("couldn't open database")
-	}
-
-	db.Create(info)
-	return nil
+func (rep *Repository) StoreSecurityInfo(info types.ApiKeyInfo) {
+	rep.db.Create(info)
 }
 
-func HasApiKeyInfo(info types.ApiKeyInfo) (bool, error) {
-	db, err := openDB()
-	if err != nil {
-		return false, err
+func (rep *Repository) HasApiKeyInfo(info types.ApiKeyInfo) (bool, error) {
+	result := rep.db.First(&info, "api_key_hash = ?", info.ApiKeyHash)
+	err := result.Error
+	if err == gorm.ErrRecordNotFound {
+		err = nil
 	}
-
-	result := db.First(&info, "api_key = ?", info.ApiKeyHash)
-	return !errors.Is(result.Error, gorm.ErrRecordNotFound), nil
+	return !errors.Is(result.Error, gorm.ErrRecordNotFound), err
 }

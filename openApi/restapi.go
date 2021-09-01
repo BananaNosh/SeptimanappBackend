@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
-	"time"
 )
 
 const serverAddress = "localhost:8080"
@@ -52,8 +51,11 @@ func sendInternalError(ctx echo.Context) error {
 }
 
 func (s SeptimanappRestApi) GetEvents(ctx echo.Context, params GetEventsParams) error {
-	events, err := database.GetEvents(params.Year)
-	if err == nil {
+	rep, err := database.GetRepository()
+	hasError := err != nil
+	events, err := rep.GetEvents(params.Year)
+	hasError = hasError || err != nil
+	if !hasError {
 		return ctx.JSON(http.StatusOK, events)
 	} else {
 		return sendInternalError(ctx)
@@ -66,6 +68,8 @@ func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, "Invalid format for events")
 	}
+	//fmt.Print("Validated single event: ")
+	//fmt.Println(ctx.Validate(events[0]))
 	err = ctx.Validate(events)
 	fmt.Println("POSTED:")
 	fmt.Println(events)
@@ -77,13 +81,20 @@ func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 	return sendOK(ctx)
 }
 
-func (s SeptimanappRestApi) AuthorizePostEvents(key string, ctx echo.Context) (bool, error) {
-	return security.ValidateApikey(key)
+func (s SeptimanappRestApi) AuthorizePostEvents(key string, _ echo.Context) (bool, error) {
+	rep, err := database.GetRepository()
+	if err != nil {
+		return false, nil
+	}
+	return security.ValidateApikey(rep, key)
 }
 
 func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
-	event, err := database.GetEvent(id)
-	if err == nil {
+	rep, err := database.GetRepository()
+	hasError := err != nil
+	event, err := rep.GetEvent(id)
+	hasError = hasError || err != nil
+	if !hasError {
 		return ctx.JSON(http.StatusOK, event)
 	} else {
 		return sendInternalError(ctx)
@@ -91,8 +102,11 @@ func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
 }
 
 func (s SeptimanappRestApi) GetLocations(ctx echo.Context, params GetLocationsParams) error {
-	location, err := database.GetLocations(params.OverallLocation)
-	if err == nil {
+	rep, err := database.GetRepository()
+	hasError := err != nil
+	location, err := rep.GetLocations(params.OverallLocation)
+	hasError = hasError || err != nil
+	if !hasError {
 		return ctx.JSON(http.StatusOK, location)
 	} else {
 		return sendInternalError(ctx)
@@ -100,8 +114,11 @@ func (s SeptimanappRestApi) GetLocations(ctx echo.Context, params GetLocationsPa
 }
 
 func (s SeptimanappRestApi) GetLocationsId(ctx echo.Context, id string) error {
-	location, err := database.GetLocation(id)
-	if err == nil {
+	rep, err := database.GetRepository()
+	hasError := err != nil
+	location, err := rep.GetLocation(id)
+	hasError = hasError || err != nil
+	if !hasError {
 		return ctx.JSON(http.StatusOK, location)
 	} else {
 		return sendInternalError(ctx)
@@ -124,24 +141,24 @@ func SetupRestRoutes(e *echo.Echo) {
 }
 
 func StartRestApi() {
-	start := time.Now()
-	year := 2020
-	events, err := database.GetEvents(&year)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Print("Events\n")
-		fmt.Println(len(events))
-		if len(events) > 0 {
-			fmt.Println(events[0].Start)
-		}
-	}
-
-	fmt.Printf("%d mikro s\n", time.Since(start)/1000)
 	fmt.Println("START REST:")
 	e := echo.New()
 	e.Validator = &Validator{validator: validator.New()}
 
+	//e.Use(echomiddleware.KeyAuthWithConfig(echomiddleware.KeyAuthConfig{
+	//	KeyLookup: "query:appid",
+	//	Skipper: func(ctx echo.Context) bool {
+	//		fmt.Println("keyauth:")
+	//		fmt.Println(ctx.Get(App_idScopes))
+	//		if strings.HasPrefix(ctx.Path(), "/openapi/definition") || strings.HasPrefix(ctx.Path(), "/definition") {
+	//			return true
+	//		}
+	//		return false
+	//	},
+	//	Validator:  func(key string, ctx echo.Context) (bool, error) {
+	//		return key == "valid-key", nil
+	//	},
+	//}))
 	swagger, err := GetSwagger()
 	if err != nil {
 		panic(err)
