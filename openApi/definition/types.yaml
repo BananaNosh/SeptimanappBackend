@@ -52,10 +52,10 @@ components:
         isMain:
           type: boolean
           description: "true if the location is the main meeting-building"
-        titleMap:
+        titles:
           $ref: "#/components/schemas/stringMap"
           description: "Map containing the title of the location for given languages"
-        descriptionMap:
+        descriptions:
           $ref: "#/components/schemas/stringMap"
           description: "Map containing the description(if given) of the location for given languages"
 

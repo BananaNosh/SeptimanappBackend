@@ -83,7 +83,7 @@ func (w *ServerInterfaceWrapper) GetEvents(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) PostEvents(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(App_idScopes, []string{"lol"})
+	ctx.Set(App_idScopes, []string{""})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.PostEvents(ctx)

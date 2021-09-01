@@ -25,10 +25,10 @@ func (event Event) MarshalJSON() ([]byte, error) {
 		namesMap[name.Language] = name.Value
 	}
 	return json.Marshal(struct {
-		Id    int
-		Start int64
-		End   int64
-		Names map[string]string
+		Id    int               `json:"id"`
+		Start int64             `json:"start"`
+		End   int64             `json:"end"`
+		Names map[string]string `json:"names"`
 	}{
 		Id:    event.ID,
 		Start: event.Start.Unix(),
@@ -78,18 +78,45 @@ type Location struct {
 	Descriptions    []LocatedString `gorm:"polymorphic:Parent;polymorphicValue:locations_description"`
 }
 
+type Language string
+
 type LocatedString struct {
 	gorm.Model
 	ID         int `gorm:"primary_key, AUTO_INCREMENT" json:"-"`
 	Value      string
-	Language   string
+	Language   string // TODO make lannguage (does not reall ymake a diffference
 	ParentID   string `json:"-"`
 	ParentType string `json:"-"`
 }
 
-type Language string
+func (location Location) MarshalJSON() ([]byte, error) {
+	/**
+	Marshal Event to json
+	*/
+	titlesMap := locationStringsToMap(location.Titles)
+	descriptionsMap := locationStringsToMap(location.Descriptions)
+	return json.Marshal(struct {
+		ID              string            `json:"id"`
+		OverallLocation OverallLocation   `json:"overallLocation"`
+		Longitude       float32           `json:"longitude"`
+		Latitude        float32           `json:"latitude"`
+		Altitude        float32           `json:"altitude"`
+		IsMain          bool              `json:"isMain"`
+		Titles          map[string]string `json:"titles"`
+		Descriptions    map[string]string `json:"descriptions"`
+	}{
+		ID:              location.ID,
+		OverallLocation: location.OverallLocation,
+		Longitude:       location.Longitude,
+		Latitude:        location.Latitude,
+		Altitude:        location.Altitude,
+		IsMain:          location.IsMain,
+		Titles:          titlesMap,
+		Descriptions:    descriptionsMap,
+	})
+}
 
-func (location *Location) UnmarshalJSON(data []byte) (err error) {
+func (location *Location) UnmarshalJSON(data []byte) (err error) { // TODO add method matching Marshal -> typedef
 	/**
 	Unmarshal json bytes to location
 	*/
@@ -123,6 +150,14 @@ func locationStringsFromMap(stringMap map[string]string) []LocatedString {
 		})
 	}
 	return locationStrings
+}
+
+func locationStringsToMap(strings []LocatedString) map[string]string {
+	stringMap := make(map[string]string, len(strings))
+	for _, title := range strings {
+		stringMap[title.Language] = title.Value
+	}
+	return stringMap
 }
 
 type ApiKeyInfo struct {
