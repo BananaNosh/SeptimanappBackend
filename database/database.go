@@ -104,6 +104,9 @@ func (rep Repository) GetEvent(id int) (*types.Event, error) {
 		return nil, err
 	}
 	event.Names = locatedStrings
+	if len(event.Names) == 0 { // event without information - should be a total-septimana event
+		return nil, nil
+	}
 	event.Model = gorm.Model{}
 	return &event, nil
 }
@@ -134,7 +137,9 @@ func (rep Repository) GetEvents(year *int) ([]types.Event, error) {
 	}
 	events = nil
 	for _, e := range eventsMap {
-		events = append(events, e)
+		if len(e.Names) > 0 {
+			events = append(events, e) // event without names is useless or a total-septimana event
+		}
 	}
 
 	//rep.Db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})

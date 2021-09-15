@@ -7,8 +7,13 @@ import (
 	"testing"
 )
 
+var wantedEvents types.Events
+
 func databaseTestSetup() {
 	setupTestEventVariables()
+	_ = copier.Copy(&wantedEvents, &events)
+	wantedEvents[0].ID = 2
+	wantedEvents[1].ID = 3
 }
 
 func setupDatabaseMock(t *testing.T) Repository {
@@ -22,10 +27,6 @@ func setupDatabaseMock(t *testing.T) Repository {
 
 func TestRepository_GetEvent(t *testing.T) {
 	databaseTestSetup()
-	var wantedEvents types.Events
-	_ = copier.Copy(&wantedEvents, &events)
-	wantedEvents[0].ID = 2
-	wantedEvents[1].ID = 3
 	tests := []struct {
 		name    string
 		eventId int
@@ -54,13 +55,17 @@ func TestRepository_GetEvent(t *testing.T) {
 
 func TestRepository_GetEvents(t *testing.T) {
 	databaseTestSetup()
+	year1 := 1900
+	year2 := 2020
 	tests := []struct {
 		name    string
 		year    *int
 		want    []types.Event
 		wantErr bool
 	}{
-		{"all", nil, types.Events{}, false},
+		{"all", nil, wantedEvents, false},
+		{"old", &year1, types.Events{}, false},
+		{"current", &year2, wantedEvents, false}, //TODO fix when AddEvent method is added
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
