@@ -15,65 +15,12 @@ import (
 const dataPath = "./data"
 
 type Repository struct {
-	db *gorm.DB
+	Db *gorm.DB
 }
 
-func GetRepository() (*Repository, error) {
+func GetRepository() (Repository, error) {
 	db, err := openDB()
-	if err != nil {
-		return nil, err
-	}
-	return &Repository{db: db}, nil
-}
-
-func insertStartEnd(db *gorm.DB) {
-	start := time.Date(2021, 7, 31, 16, 30, 0, 0, util.Locale())
-	end := time.Date(2021, 8, 7, 14, 0, 0, 0, util.Locale())
-	var event types.Event
-	db.FirstOrCreate(&event, types.Event{Start: start, End: end, Names: nil})
-
-}
-
-func (rep *Repository) InitDatabase() {
-	fmt.Println("Init Database")
-	//newLogger := logger.New(
-	//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-	//	logger.Config{
-	//		SlowThreshold: time.Second,   // Slow SQL threshold
-	//		LogLevel:      logger.Info, // Log level
-	//	},
-	//)
-	db := rep.db
-
-	// Migrate the schema
-	err := db.AutoMigrate(&types.Event{}, &types.LocatedString{})
-	if err != nil {
-		panic("failed to auto migrate database")
-	}
-
-	firstId := 1
-	insertStartEnd(db)
-	horariaIdOffset := firstId + 1
-
-	events, err := EventsFromJsonHoraria(dataPath, horariaIdOffset)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		db.Create(events)
-	}
-
-	err = db.AutoMigrate(&types.Location{})
-	if err != nil {
-		panic("failed to auto migrate database")
-	}
-
-	locations := LocationsFromJsonFiles(dataPath)
-	//for _, location := range locations { TODO replace with check if existent
-	//	db.Updates(&location)
-	//}
-	db.Create(locations)
-
-	err = db.AutoMigrate(types.ApiKeyInfo{})
+	return Repository{Db: db}, err
 }
 
 func openDB() (*gorm.DB, error) {
@@ -87,9 +34,63 @@ func openDB() (*gorm.DB, error) {
 	return db, nil
 }
 
-func (rep *Repository) GetEvent(id int) (*types.Event, error) {
+func insertStartEnd(db *gorm.DB) {
+	start := time.Date(2021, 7, 31, 16, 30, 0, 0, util.Locale())
+	end := time.Date(2021, 8, 7, 14, 0, 0, 0, util.Locale())
 	var event types.Event
-	err := rep.db.First(&event, id).Error
+	db.FirstOrCreate(&event, types.Event{Start: start, End: end, Names: nil})
+
+}
+
+func (rep Repository) InitDatabase() {
+	rep.InitDatabaseFromPath(dataPath)
+}
+
+func (rep Repository) InitDatabaseFromPath(dataPath string) {
+	fmt.Printf("Init Database from path %s\n", dataPath)
+	//newLogger := logger.New(
+	//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+	//	logger.Config{
+	//		SlowThreshold: time.Second,   // Slow SQL threshold
+	//		LogLevel:      logger.Info, // Log level
+	//	},
+	//)
+
+	// Migrate the schema
+	err := rep.SetupTables()
+
+	db := rep.Db
+	firstId := 1
+	insertStartEnd(db)
+	horariaIdOffset := firstId + 1
+
+	events, err := EventsFromJsonHoraria(dataPath, horariaIdOffset)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		db.Create(events)
+	}
+
+	locations := LocationsFromJsonFiles(dataPath)
+	//for _, location := range locations { TODO replace with check if existent
+	//	Db.Updates(&location)
+	//}
+	db.Create(locations)
+}
+
+func (rep Repository) SetupTables() error {
+	err := rep.Db.AutoMigrate(&types.Event{}, &types.LocatedString{})
+	err2 := rep.Db.AutoMigrate(&types.Location{})
+	err3 := rep.Db.AutoMigrate(types.ApiKeyInfo{})
+	if err != nil || err2 != nil || err3 != nil {
+		panic("failed to auto migrate database")
+	}
+	return err
+}
+
+func (rep Repository) GetEvent(id int) (*types.Event, error) {
+	var event types.Event
+	err := rep.Db.First(&event, id).Error
 	if err != nil {
 		if err.Error() == "record not found" {
 			return nil, nil
@@ -98,27 +99,28 @@ func (rep *Repository) GetEvent(id int) (*types.Event, error) {
 	}
 
 	var locatedStrings []types.LocatedString
-	err = rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Where("parent_id = ?", id).Find(&locatedStrings).Error
+	err = rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Where("parent_id = ?", id).Find(&locatedStrings).Error
 	if err != nil {
 		return nil, err
 	}
 	event.Names = locatedStrings
+	event.Model = gorm.Model{}
 	return &event, nil
 }
 
-func (rep *Repository) GetEvents(year *int) ([]types.Event, error) {
+func (rep Repository) GetEvents(year *int) ([]types.Event, error) {
 	var events []types.Event
 	eventsMap := make(map[int]types.Event, len(events))
 	var locatedStrings []types.LocatedString
 	if year != nil {
-		rep.db.Where("SUBSTR(start, 1, 4) = ?", strconv.Itoa(*year)).Find(&events) // TODO make nicer if possible
+		rep.Db.Where("SUBSTR(start, 1, 4) = ?", strconv.Itoa(*year)).Find(&events) // TODO make nicer if possible
 	} else {
-		rep.db.Find(&events)
+		rep.Db.Find(&events)
 	}
 	for _, e := range events {
 		eventsMap[e.ID] = e
 	}
-	rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Find(&locatedStrings)
+	rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Find(&locatedStrings)
 
 	for _, locString := range locatedStrings {
 		parentID, err := strconv.Atoi(locString.ParentID)
@@ -135,21 +137,21 @@ func (rep *Repository) GetEvents(year *int) ([]types.Event, error) {
 		events = append(events, e)
 	}
 
-	//rep.db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})
-	//rep.db.Joins("Names").Find(&events)
-	//rep.db.Preload("Names").Find(&events)
+	//rep.Db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})
+	//rep.Db.Joins("Names").Find(&events)
+	//rep.Db.Preload("Names").Find(&events)
 	//var pairs []struct{
 	//	event *types.Event
 	//	locatedString *types.LocatedString
 	//}
-	//rep.db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = events.id").Find(&pairs)
+	//rep.Db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = events.id").Find(&pairs)
 	//fmt.Println(pairs)
 	return events, nil
 }
 
-func (rep *Repository) GetLocation(id string) (*types.Location, error) {
+func (rep Repository) GetLocation(id string) (*types.Location, error) {
 	var location types.Location
-	err := rep.db.First(&location, "id = ?", id).Error
+	err := rep.Db.First(&location, "id = ?", id).Error
 	if err != nil {
 		if err.Error() == "record not found" {
 			return nil, nil
@@ -159,11 +161,11 @@ func (rep *Repository) GetLocation(id string) (*types.Location, error) {
 
 	var titles []types.LocatedString
 	var descriptions []types.LocatedString
-	err = rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Where("parent_id = ?", id).Find(&titles).Error
+	err = rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Where("parent_id = ?", id).Find(&titles).Error
 	if err != nil {
 		return nil, err
 	}
-	err = rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Where("parent_id = ?", id).Find(&titles).Error
+	err = rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Where("parent_id = ?", id).Find(&titles).Error
 	if err != nil {
 		return nil, err
 	}
@@ -172,21 +174,21 @@ func (rep *Repository) GetLocation(id string) (*types.Location, error) {
 	return &location, nil
 }
 
-func (rep *Repository) GetLocations(overallLocation *types.OverallLocation) ([]types.Location, error) {
+func (rep Repository) GetLocations(overallLocation *types.OverallLocation) ([]types.Location, error) {
 	var locations []types.Location
 	locationsMap := make(map[string]types.Location, len(locations))
 	var titles []types.LocatedString
 	var descriptions []types.LocatedString
 	if overallLocation != nil {
-		rep.db.Where("overall_location = ?", *overallLocation).Find(&locations)
+		rep.Db.Where("overall_location = ?", *overallLocation).Find(&locations)
 	} else {
-		rep.db.Find(&locations)
+		rep.Db.Find(&locations)
 	}
 	for _, l := range locations {
 		locationsMap[l.ID] = l
 	}
 
-	rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Find(&titles)
+	rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_title").Find(&titles)
 	for _, title := range titles {
 		parentID := title.ParentID
 		location, ok := locationsMap[parentID]
@@ -196,7 +198,7 @@ func (rep *Repository) GetLocations(overallLocation *types.OverallLocation) ([]t
 		}
 	}
 
-	rep.db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Find(&descriptions)
+	rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Find(&descriptions)
 	for _, description := range descriptions {
 		parentID := description.ParentID
 		location, ok := locationsMap[parentID]
@@ -211,24 +213,24 @@ func (rep *Repository) GetLocations(overallLocation *types.OverallLocation) ([]t
 		locations = append(locations, l)
 	}
 
-	//db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})
-	//db.Joins("Names").Find(&locations)
-	//db.Preload("Names").Find(&locations)
+	//Db.Model(&types.Event{}).Select("users., emails.email").Joins("left join emails on emails.user_id = users.id").Scan(&result{})
+	//Db.Joins("Names").Find(&locations)
+	//Db.Preload("Names").Find(&locations)
 	//var pairs []struct{
 	//	event *types.Event
 	//	locatedString *types.LocatedString
 	//}
-	//db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = locations.id").Find(&pairs)
+	//Db.Model(&types.Event{}).Joins("left join located_strings on located_strings.parent_id = locations.id").Find(&pairs)
 	//fmt.Println(pairs)
 	return locations, nil
 }
 
-func (rep *Repository) StoreSecurityInfo(info types.ApiKeyInfo) {
-	rep.db.Create(info)
+func (rep Repository) StoreSecurityInfo(info types.ApiKeyInfo) {
+	rep.Db.Create(info)
 }
 
-func (rep *Repository) HasApiKeyInfo(info types.ApiKeyInfo) (bool, error) {
-	result := rep.db.First(&info, "api_key_hash = ?", info.ApiKeyHash)
+func (rep Repository) HasApiKeyInfo(info types.ApiKeyInfo) (bool, error) {
+	result := rep.Db.First(&info, "api_key_hash = ?", info.ApiKeyHash)
 	err := result.Error
 	if err == gorm.ErrRecordNotFound {
 		err = nil

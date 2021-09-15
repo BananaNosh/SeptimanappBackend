@@ -19,8 +19,10 @@ require (
 	github.com/jinzhu/copier v0.2.8
 	github.com/labstack/echo/v4 v4.2.2
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/echo-swagger v1.1.0
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
+	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	//golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	gorm.io/driver/sqlite v1.1.4

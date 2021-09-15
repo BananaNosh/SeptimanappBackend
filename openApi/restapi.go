@@ -18,7 +18,9 @@ import (
 
 const serverAddress = "localhost:8080"
 
-type SeptimanappRestApi struct{}
+type SeptimanappRestApi struct {
+	repository database.Repository
+}
 
 type Validator struct {
 	validator *validator.Validate
@@ -51,11 +53,8 @@ func sendInternalError(ctx echo.Context) error {
 }
 
 func (s SeptimanappRestApi) GetEvents(ctx echo.Context, params GetEventsParams) error {
-	rep, err := database.GetRepository()
-	hasError := err != nil
-	events, err := rep.GetEvents(params.Year)
-	hasError = hasError || err != nil
-	if !hasError {
+	events, err := s.repository.GetEvents(params.Year)
+	if err == nil {
 		return ctx.JSON(http.StatusOK, events)
 	} else {
 		return sendInternalError(ctx)
@@ -82,19 +81,12 @@ func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
 }
 
 func (s SeptimanappRestApi) AuthorizePostEvents(key string, _ echo.Context) (bool, error) {
-	rep, err := database.GetRepository()
-	if err != nil {
-		return false, nil
-	}
-	return security.ValidateApikey(rep, key)
+	return security.ValidateApikey(s.repository, key)
 }
 
 func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
-	rep, err := database.GetRepository()
-	hasError := err != nil
-	event, err := rep.GetEvent(id)
-	hasError = hasError || err != nil
-	if !hasError {
+	event, err := s.repository.GetEvent(id)
+	if err == nil {
 		return ctx.JSON(http.StatusOK, event)
 	} else {
 		return sendInternalError(ctx)
@@ -102,11 +94,8 @@ func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
 }
 
 func (s SeptimanappRestApi) GetLocations(ctx echo.Context, params GetLocationsParams) error {
-	rep, err := database.GetRepository()
-	hasError := err != nil
-	location, err := rep.GetLocations(params.OverallLocation)
-	hasError = hasError || err != nil
-	if !hasError {
+	location, err := s.repository.GetLocations(params.OverallLocation)
+	if err == nil {
 		return ctx.JSON(http.StatusOK, location)
 	} else {
 		return sendInternalError(ctx)
@@ -114,11 +103,8 @@ func (s SeptimanappRestApi) GetLocations(ctx echo.Context, params GetLocationsPa
 }
 
 func (s SeptimanappRestApi) GetLocationsId(ctx echo.Context, id string) error {
-	rep, err := database.GetRepository()
-	hasError := err != nil
-	location, err := rep.GetLocation(id)
-	hasError = hasError || err != nil
-	if !hasError {
+	location, err := s.repository.GetLocation(id)
+	if err == nil {
 		return ctx.JSON(http.StatusOK, location)
 	} else {
 		return sendInternalError(ctx)
@@ -135,7 +121,11 @@ func SetupDocumentationRoutes(e *echo.Echo) {
 }
 
 func SetupRestRoutes(e *echo.Echo) {
-	api := SeptimanappRestApi{}
+	repository, err := database.GetRepository()
+	if err != nil {
+		panic(err)
+	}
+	api := SeptimanappRestApi{repository: repository}
 	RegisterHandlers(e, api)
 	RegisterAuthMiddleware(e, api) // TODO remove if codegen provides the corresponding part
 }

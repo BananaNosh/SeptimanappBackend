@@ -3,49 +3,21 @@ package database
 import (
 	"SeptimanappBackend/types"
 	"github.com/jinzhu/copier"
-	"gorm.io/gorm"
 	"reflect"
 	"testing"
 	"time"
 )
 
-var eventTime1 EventTime
-var eventTime2 EventTime
-var eventTime3 EventTime
-var eventTime4 EventTime
 var horarium Horarium
-var events []types.Event
 
-func init() {
-	eventTime1 = EventTime{
-		Year:   2019,
-		Month:  6,
-		Day:    25,
-		Hour:   16,
-		Minute: 30,
-	}
-	eventTime2 = EventTime{
-		Year:   2019,
-		Month:  6,
-		Day:    25,
-		Hour:   18,
-		Minute: 00,
-	}
-	eventTime3 = eventTime1
-	eventTime3.Hour = 20
-	eventTime4 = eventTime2
-	eventTime4.Hour = 21
-	var locale, _ = time.LoadLocation("Europe/Berlin")
+func horariumHelperTestSetup() {
+	setupTestEventVariables()
+
 	horariumEvents := []WeekViewEvent{
 		{"e0", eventTime1, eventTime2, "proba0"},
 		{"ev1", eventTime3, eventTime4, "proba1"},
 	}
 	horarium = Horarium{horariumEvents, "la"}
-
-	events = []types.Event{
-		{gorm.Model{ID: 0, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 0, eventTime1.ToTime(locale), eventTime2.ToTime(locale), []types.LocatedString{{Value: "test0", Language: "de"}, {Value: "proba0", Language: "la"}}},
-		{gorm.Model{ID: 1, CreatedAt: time.Time{}, UpdatedAt: time.Time{}}, 1, eventTime3.ToTime(locale), eventTime4.ToTime(locale), []types.LocatedString{{Value: "test1", Language: "de"}, {Value: "proba1", Language: "la"}}},
-	}
 }
 
 //func TestEventTime_ToTime(t *testing.T) {
@@ -84,6 +56,7 @@ func init() {
 //}
 
 func TestHorarium_toEventList(t *testing.T) {
+	horariumHelperTestSetup()
 	wantedEvents := events
 	for i := range wantedEvents {
 		wantedEvents[i].Names = wantedEvents[i].Names[1:2]
@@ -116,6 +89,7 @@ func TestHorarium_toEventList(t *testing.T) {
 }
 
 func Test_eventsFromJsonHoraria(t *testing.T) {
+	horariumHelperTestSetup()
 	var wantedEvents []types.Event
 	_ = copier.Copy(&wantedEvents, &events)
 	for i := range wantedEvents {

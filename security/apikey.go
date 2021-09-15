@@ -36,7 +36,7 @@ func StoreNewApiKey() {
 	repository.StoreSecurityInfo(info)
 }
 
-func ValidateApikey(repository *database.Repository, key string) (bool, error) {
+func ValidateApikey(repository database.Repository, key string) (bool, error) {
 	hasKey, err := repository.HasApiKeyInfo(
 		types.ApiKeyInfo{
 			ApiKeyHash: HashKey(key),
