@@ -10,7 +10,7 @@ paths: {}
 
 components:
   schemas:
-    event:
+    eventWithId:
       type: object
       properties:
         id:
@@ -27,6 +27,26 @@ components:
 #        location:
 #          type: string
 #          description: "The location of the event"
+    eventsWithId:
+      type: array
+      items:
+        $ref: "#/components/schemas/eventWithId"
+
+    event:
+      type: object
+      properties:
+        start:
+          type: integer
+          description: "The start time of the event as UNIX timestamp"
+        end:
+          type: integer
+          description: "The end time of the event as UNIX timestamp"
+        names:
+          $ref: "#/components/schemas/stringMap"
+          description: "Map containing a name/description of the event for given languages"
+    #        location:
+    #          $ref: "#/components/schemas/Locations"
+    #          description: "The location of the event"
     events:
       type: array
       items:

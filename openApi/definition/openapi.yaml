@@ -23,7 +23,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./types.yaml#/components/schemas/event"
+                $ref: "./types.yaml#/components/schemas/eventWithId"
   /events:
     get:
       parameters:
@@ -41,7 +41,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./types.yaml#/components/schemas/events"
+                $ref: "./types.yaml#/components/schemas/eventsWithId"
 
     post:
       security:
