@@ -84,13 +84,21 @@ func (s SeptimanappRestApi) AuthorizePostEvents(key string, _ echo.Context) (boo
 	return security.ValidateApikey(s.repository, key)
 }
 
-func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id int) error {
-	event, err := s.repository.GetEvent(id)
+func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id EventId) error {
+	event, err := s.repository.GetEvent(int(id))
 	if err == nil {
 		return ctx.JSON(http.StatusOK, event)
 	} else {
 		return sendInternalError(ctx)
 	}
+}
+
+func (s SeptimanappRestApi) DeleteEventsId(ctx echo.Context, id EventId) error {
+	panic("implement me")
+}
+
+func (s SeptimanappRestApi) PutEventsId(ctx echo.Context, id EventId) error {
+	panic("implement me")
 }
 
 func (s SeptimanappRestApi) GetLocations(ctx echo.Context, params GetLocationsParams) error {

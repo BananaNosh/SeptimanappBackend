@@ -3,8 +3,8 @@ module SeptimanappBackend
 go 1.13
 
 require (
-	github.com/deepmap/oapi-codegen v1.6.1
-	github.com/getkin/kin-openapi v0.60.0
+	github.com/deepmap/oapi-codegen v1.8.3
+	github.com/getkin/kin-openapi v0.61.0
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/google/uuid v1.3.0
@@ -19,6 +19,7 @@ require (
 	github.com/jinzhu/copier v0.2.8
 	github.com/labstack/echo/v4 v4.2.2
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/echo-swagger v1.1.0
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect

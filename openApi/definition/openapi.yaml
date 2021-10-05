@@ -12,11 +12,7 @@ paths:
   /events/{id}:
     get:
       parameters:
-        - name: id
-          schema:
-            type: integer
-          in: path
-          required: true
+        - $ref: "#/components/parameters/eventId"
       responses:
         200:
           description: "Returns the event with the given id"
@@ -24,6 +20,28 @@ paths:
             application/json:
               schema:
                 $ref: "./types.yaml#/components/schemas/eventWithId"
+        404:
+          description: "If event not found"
+    put:
+      security:
+        - app_id: []
+      parameters:
+        - $ref: "#/components/parameters/eventId"
+      responses:
+        204:
+          description: "Updates the event with given id"
+        404:
+          description: "If event not found"
+    delete:
+      security:
+        - app_id: []
+      parameters:
+        - $ref: "#/components/parameters/eventId"
+      responses:
+        204:
+          description: "Deletes the event with the given id"
+        404:
+          description: "If event not found"
   /events:
     get:
       parameters:
@@ -53,13 +71,15 @@ paths:
             schema:
               $ref: "./types.yaml#/components/schemas/events"
       responses:
-        200:
+        201:
           description: "Saves the posted events"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: "OK"
+                type: array
+                items:
+                  type: integer
+                description: "The ids of the created events"
 
   /locations/{id}:
     get:
@@ -100,6 +120,14 @@ components:
       description: API key to authorize requests.
       name: appid
       in: query
+
+  parameters:
+    eventId:
+      name: id
+      schema:
+        type: integer
+      in: path
+      required: true
 
 
 #    /hostname:
