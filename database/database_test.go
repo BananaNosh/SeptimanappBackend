@@ -5,6 +5,7 @@ import (
 	"SeptimanappBackend/util"
 	"github.com/jinzhu/copier"
 	"testing"
+	"time"
 )
 
 var wantedEvents types.Events
@@ -14,6 +15,32 @@ func databaseTestSetup() {
 	_ = copier.Copy(&wantedEvents, &events)
 	wantedEvents[0].ID = 2
 	wantedEvents[1].ID = 3
+	ev3 := types.Event{
+		Start: eventTime1.ToTime(util.Locale()),
+		End:   eventTime2.ToTime(util.Locale()),
+		Names: []types.LocatedString{
+			{Value: "test3", Language: "de"},
+			{Value: "proba3", Language: "lat"},
+		},
+	}
+	ev4 := types.Event{
+		ID:    5,
+		Start: eventTime1.ToTime(util.Locale()),
+		End:   eventTime2.ToTime(util.Locale()),
+		Names: []types.LocatedString{
+			{Value: "test4", Language: "de"},
+			{Value: "proba4", Language: "lat"},
+		},
+	}
+	ev5 := types.Event{
+		Start: eventTime1.ToTime(util.Locale()).Add(time.Duration(24*365) * time.Hour),
+		End:   eventTime2.ToTime(util.Locale()).Add(time.Duration(24*365) * time.Hour),
+		Names: []types.LocatedString{
+			{Value: "test4", Language: "de"},
+			{Value: "proba4", Language: "lat"},
+		},
+	}
+	wantedEvents = append(wantedEvents, ev3, ev4, ev5)
 }
 
 func setupDatabaseMock(t *testing.T) Repository {
@@ -46,7 +73,7 @@ func TestRepository_GetEvent(t *testing.T) {
 				t.Errorf("GetEvent() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !util.EqualEvent(got, tt.want) {
+			if !util.EqualEvent(got, tt.want, true) {
 				t.Errorf("\nGetEvent() got = %v,\n want %v", got, tt.want)
 			}
 		})
@@ -63,201 +90,96 @@ func TestRepository_GetEvents(t *testing.T) {
 		want    []types.Event
 		wantErr bool
 	}{
-		{"all", nil, wantedEvents, false},
+		{"all", nil, wantedEvents[:2], false},
 		{"old", &year1, types.Events{}, false},
-		{"current", &year2, wantedEvents, false}, //TODO fix when AddEvent method is added
+		{"current", &year2, types.Events{wantedEvents[4]}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rep := setupDatabaseMock(t)
+			if tt.name == "current" {
+				_, _ = rep.AddEvent(wantedEvents[4])
+			}
 			got, err := rep.GetEvents(tt.year)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEvents() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !util.EqualEvents(got, tt.want) {
+			if !util.EqualEvents(got, tt.want, tt.name != "current") {
 				t.Errorf("GetEvents() got = %v,\n want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-//
-//func TestRepository_GetLocation(t *testing.T) {
-//	type fields struct {
-//		Db *gorm.DB
-//	}
-//	type args struct {
-//		id string
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		want    *types.Location
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			rep := Repository{
-//				Db: tt.fields.Db,
-//			}
-//			got, err := rep.GetLocation(tt.args.id)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("GetLocation() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("GetLocation() got = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
-//func TestRepository_GetLocations(t *testing.T) {
-//	type fields struct {
-//		Db *gorm.DB
-//	}
-//	type args struct {
-//		overallLocation *types.OverallLocation
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		want    []types.Location
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			rep := Repository{
-//				Db: tt.fields.Db,
-//			}
-//			got, err := rep.GetLocations(tt.args.overallLocation)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("GetLocations() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("GetLocations() got = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
-//func TestRepository_HasApiKeyInfo(t *testing.T) {
-//	type fields struct {
-//		Db *gorm.DB
-//	}
-//	type args struct {
-//		info types.ApiKeyInfo
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		want    bool
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			rep := Repository{
-//				Db: tt.fields.Db,
-//			}
-//			got, err := rep.HasApiKeyInfo(tt.args.info)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("HasApiKeyInfo() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if got != tt.want {
-//				t.Errorf("HasApiKeyInfo() got = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
-//func TestRepository_InitDatabase(t *testing.T) {
-//	type fields struct {
-//		Db *gorm.DB
-//	}
-//	tests := []struct {
-//		name   string
-//		fields fields
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			rep := Repository{
-//				Db: tt.fields.Db,
-//			}
-//		})
-//	}
-//}
-//
-//func TestRepository_StoreSecurityInfo(t *testing.T) {
-//	type fields struct {
-//		Db *gorm.DB
-//	}
-//	type args struct {
-//		info types.ApiKeyInfo
-//	}
-//	tests := []struct {
-//		name   string
-//		fields fields
-//		args   args
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			rep := Repository{
-//				Db: tt.fields.Db,
-//			}
-//		})
-//	}
-//}
-//
-//func Test_insertStartEnd(t *testing.T) {
-//	type args struct {
-//		db *gorm.DB
-//	}
-//	tests := []struct {
-//		name string
-//		args args
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//		})
-//	}
-//}
-//
-//func Test_openDB(t *testing.T) {
-//	tests := []struct {
-//		name    string
-//		want    *gorm.DB
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			got, err := openDB()
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("openDB() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("openDB() got = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
+func TestRepository_AddEvent(t *testing.T) {
+	databaseTestSetup()
+	tests := []struct {
+		name    string
+		event   types.Event
+		wantErr bool
+	}{
+		{"add ev3", wantedEvents[2], false},
+		{"add ev4 with ID", wantedEvents[3], true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rep := setupDatabaseMock(t)
+			id, err := rep.AddEvent(tt.event)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("AddEvents() error = %v, wantErr %v", err, tt.wantErr)
+				}
+				return
+			}
+			newEv, err := rep.GetEvent(id)
+			if err != nil {
+				t.Errorf("AddEvents() error = %v", err)
+				return
+			}
+			if !util.EqualEvent(newEv, &tt.event, false) {
+				t.Errorf("AddEvents() event = %v,\n originalEvent %v", newEv, tt.event)
+				return
+			}
+		})
+	}
+}
+
+func TestRepository_AddEvents(t *testing.T) {
+	databaseTestSetup()
+	tests := []struct {
+		name                   string
+		events                 types.Events
+		wantErr                bool
+		wantedTotalEventsCount int
+	}{
+		{"one wrong", wantedEvents[2:4], true, 2},
+		{"both existing", wantedEvents[:2], true, 2},
+		{"add two correct", types.Events{wantedEvents[2], wantedEvents[4]}, false, 4},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rep := setupDatabaseMock(t)
+			ids, err := rep.AddEvents(tt.events)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("AddEvents() error = %v, wantErr %v", err, tt.wantErr)
+				}
+				return
+			}
+			total, err := rep.GetEvents(nil)
+			if err != nil {
+				t.Errorf("AddEvents() -> could not get all events")
+			}
+			if len(total) != tt.wantedTotalEventsCount {
+				t.Errorf("AddEvents() totalEvents = %v, wantedTotalEventsCount %v", total, tt.wantedTotalEventsCount)
+			}
+			for i, id := range ids {
+				event, err := rep.GetEvent(id)
+				if err != nil || !util.EqualEvent(event, &tt.events[i], false) {
+					t.Errorf("AddEvents() event = %v, originalEvent %v, err = %v", event, tt.events[i], err)
+				}
+			}
+		})
+	}
+}

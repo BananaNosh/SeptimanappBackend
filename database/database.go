@@ -154,6 +154,29 @@ func (rep Repository) GetEvents(year *int) ([]types.Event, error) {
 	return events, nil
 }
 
+func (rep Repository) AddEvent(event types.Event) (int, error) {
+	ids, err := rep.AddEvents(types.Events{event})
+	var id int
+	if err == nil {
+		id = ids[0]
+	}
+	return id, err
+}
+
+func (rep Repository) AddEvents(events types.Events) ([]int, error) {
+	for _, ev := range events {
+		if ev.ID != 0 {
+			return nil, errors.New("event must not have an ID before adding")
+		}
+	}
+	err := rep.Db.Create(&events).Error
+	var ids []int
+	for _, ev := range events {
+		ids = append(ids, ev.ID)
+	}
+	return ids, err
+}
+
 func (rep Repository) GetLocation(id string) (*types.Location, error) {
 	var location types.Location
 	err := rep.Db.First(&location, "id = ?", id).Error

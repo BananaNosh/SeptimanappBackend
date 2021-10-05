@@ -4,28 +4,28 @@ import (
 	"SeptimanappBackend/types"
 )
 
-func EqualEvents(events1 types.Events, events2 types.Events) bool {
+func EqualEvents(events1 types.Events, events2 types.Events, checkIds bool) bool {
 	if len(events1) != len(events2) {
 		return false
 	}
 	for i := range events1 {
 		e1 := events1[i]
 		e2 := events2[i]
-		if !EqualEvent(&e1, &e2) {
+		if !EqualEvent(&e1, &e2, checkIds) {
 			return false
 		}
 	}
 	return true
 }
 
-func EqualEvent(event1 *types.Event, event2 *types.Event) bool {
+func EqualEvent(event1 *types.Event, event2 *types.Event, checkId bool) bool {
 	if event1 == nil || event2 == nil {
 		return event1 == event2
 	}
 	if !event1.Start.Equal(event2.Start) || !event1.End.Equal(event2.End) {
 		return false
 	}
-	return event1.ID == event2.ID && EqualLocatedStrings(event1.Names, event2.Names)
+	return (!checkId || event1.ID == event2.ID) && EqualLocatedStrings(event1.Names, event2.Names)
 }
 
 func EqualLocatedStrings(strings1 []types.LocatedString, strings2 []types.LocatedString) bool {
