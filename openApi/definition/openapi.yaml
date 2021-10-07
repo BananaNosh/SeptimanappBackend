@@ -27,9 +27,20 @@ paths:
         - app_id: []
       parameters:
         - $ref: "#/components/parameters/eventId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./types.yaml#/components/schemas/event"
       responses:
-        204:
+        200:
           description: "Updates the event with given id"
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
         404:
           description: "If event not found"
     delete:
@@ -38,8 +49,13 @@ paths:
       parameters:
         - $ref: "#/components/parameters/eventId"
       responses:
-        204:
+        200:
           description: "Deletes the event with the given id"
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
         404:
           description: "If event not found"
   /events:

@@ -8,7 +8,7 @@ import (
 
 type Event struct {
 	gorm.Model
-	ID    int             `gorm:"primary_key, AUTO_INCREMENT" validate:"required"`
+	ID    int             `gorm:"primary_key, AUTO_INCREMENT"`
 	Start time.Time       `validate:"required"`
 	End   time.Time       `validate:"required,gtfield=Start"`
 	Names []LocatedString `gorm:"polymorphic:Parent;" validate:"required"`

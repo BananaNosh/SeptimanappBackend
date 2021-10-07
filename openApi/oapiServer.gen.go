@@ -29,6 +29,9 @@ type GetEventsParams struct {
 // PostEventsJSONBody defines parameters for PostEvents.
 type PostEventsJSONBody externalRef0.Events
 
+// PutEventsIdJSONBody defines parameters for PutEventsId.
+type PutEventsIdJSONBody externalRef0.Event
+
 // GetLocationsParams defines parameters for GetLocations.
 type GetLocationsParams struct {
 	// if given only locations of this overallLocation are returned
@@ -37,6 +40,9 @@ type GetLocationsParams struct {
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody PostEventsJSONBody
+
+// PutEventsIdJSONRequestBody defines body for PutEventsId for application/json ContentType.
+type PutEventsIdJSONRequestBody PutEventsIdJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {

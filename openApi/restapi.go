@@ -52,6 +52,10 @@ func sendInternalError(ctx echo.Context) error {
 	return ctx.String(http.StatusInternalServerError, "There was an error with the database")
 }
 
+func (s SeptimanappRestApi) AuthorizeModifyEvents(key string, _ echo.Context) (bool, error) {
+	return security.ValidateApikey(s.repository, key)
+}
+
 func (s SeptimanappRestApi) GetEvents(ctx echo.Context, params GetEventsParams) error {
 	events, err := s.repository.GetEvents(params.Year)
 	if err == nil {
@@ -59,29 +63,6 @@ func (s SeptimanappRestApi) GetEvents(ctx echo.Context, params GetEventsParams) 
 	} else {
 		return sendInternalError(ctx)
 	}
-}
-
-func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
-	var events []types.Event
-	err := ctx.Bind(&events)
-	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Invalid format for events")
-	}
-	//fmt.Print("Validated single event: ")
-	//fmt.Println(ctx.Validate(events[0]))
-	err = ctx.Validate(events)
-	fmt.Println("POSTED:")
-	fmt.Println(events)
-	if err != nil {
-		fmt.Println("Not validated")
-		fmt.Println(err)
-		return ctx.String(http.StatusBadRequest, "Invalid format for events")
-	}
-	return sendOK(ctx)
-}
-
-func (s SeptimanappRestApi) AuthorizePostEvents(key string, _ echo.Context) (bool, error) {
-	return security.ValidateApikey(s.repository, key)
 }
 
 func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id EventId) error {
@@ -93,12 +74,65 @@ func (s SeptimanappRestApi) GetEventsId(ctx echo.Context, id EventId) error {
 	}
 }
 
+func (s SeptimanappRestApi) PostEvents(ctx echo.Context) error {
+	var events types.Events
+	err := ctx.Bind(&events)
+	if err != nil {
+		return sendInvalidRequest(ctx)
+	}
+	err = ctx.Validate(events)
+	if err != nil {
+		fmt.Println("Not validated")
+		fmt.Println(err)
+		return sendInvalidFormat(ctx, "events")
+	}
+	ids, err := s.repository.AddEvents(events)
+	if err != nil {
+		return sendInternalError(ctx)
+	}
+	fmt.Println("POSTED:")
+	fmt.Println(ids)
+	return ctx.JSON(http.StatusOK, ids)
+}
+
+func sendInvalidFormat(ctx echo.Context, paramName string) error {
+	return ctx.String(http.StatusBadRequest, fmt.Sprintf("Invalid format for %s", paramName))
+}
+
+func sendInvalidRequest(ctx echo.Context) error {
+	return ctx.String(http.StatusBadRequest, "Invalid Request")
+}
+
 func (s SeptimanappRestApi) DeleteEventsId(ctx echo.Context, id EventId) error {
-	panic("implement me")
+	err := s.repository.DeleteEvent(int(id))
+	if err != nil {
+		return sendInternalError(ctx)
+	}
+	return sendOK(ctx)
 }
 
 func (s SeptimanappRestApi) PutEventsId(ctx echo.Context, id EventId) error {
-	panic("implement me")
+	var event types.Event
+	err := ctx.Bind(&event)
+	if err != nil {
+		return sendInvalidRequest(ctx)
+	}
+	err = ctx.Validate(event)
+	if err != nil {
+		fmt.Println("Not validated")
+		fmt.Println(err)
+		return sendInvalidFormat(ctx, "event")
+	}
+	event.ID = int(id)
+	err = s.repository.UpdateEvent(event)
+	if err != nil {
+		if err.Error() == database.RecordNotFound {
+			return ctx.String(http.StatusNotFound, "No such event")
+		}
+		return sendInternalError(ctx)
+	}
+	fmt.Printf("UPDATED:%v\n", id)
+	return sendOK(ctx)
 }
 
 func (s SeptimanappRestApi) GetLocations(ctx echo.Context, params GetLocationsParams) error {
