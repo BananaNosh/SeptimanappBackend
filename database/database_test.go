@@ -183,3 +183,92 @@ func TestRepository_AddEvents(t *testing.T) {
 		})
 	}
 }
+
+func TestRepository_DeleteEvent(t *testing.T) {
+	databaseTestSetup()
+	tests := []struct {
+		name    string
+		id      int
+		wantErr bool
+	}{
+		{"delete ev2", 2, false},
+		{"delete ev10", 10, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rep := setupDatabaseMock(t)
+			existingEvent, _ := rep.GetEvent(tt.id)
+			var existingNames []types.LocatedString
+			if existingEvent != nil {
+				existingNames = existingEvent.Names
+			}
+			if err := rep.DeleteEvent(tt.id); (err != nil) != tt.wantErr {
+				t.Errorf("DeleteEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			event, err := rep.GetEvent(tt.id)
+			if event != nil {
+				t.Errorf("DeleteEvent() got deleted event = %v, error = %v", event, err)
+			}
+			for _, exName := range existingNames {
+				var name types.LocatedString
+				err := rep.Db.First(&name, exName.ID).Error
+				if err == nil {
+					t.Errorf("DeleteEvent() got deleted name = %v", name)
+				}
+			}
+		})
+	}
+}
+
+func TestRepository_DeleteEvents(t *testing.T) {
+	databaseTestSetup()
+	tests := []struct {
+		name    string
+		ids     []int
+		wantErr bool
+	}{
+		{"delete ev2 and ev3", []int{2, 3}, false},
+		{"delete ev3 and 10", []int{3, 10}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rep := setupDatabaseMock(t)
+			if err := rep.DeleteEvents(tt.ids); (err != nil) != tt.wantErr {
+				t.Errorf("DeleteEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			for _, id := range tt.ids {
+				event, err := rep.GetEvent(id)
+				if event != nil {
+					t.Errorf("DeleteEvent() got deleted event = %v, error = %v", event, err)
+				}
+			}
+		})
+	}
+}
+
+func TestRepository_UpdateEvent(t *testing.T) {
+	databaseTestSetup()
+	newEvent2 := wantedEvents[0]
+	newEvent2.Start = eventTime3.ToTime(util.Locale())
+	newEvent2.End = eventTime4.ToTime(util.Locale())
+	newEvent2.Names = append(newEvent2.Names, types.LocatedString{Value: "huh", Language: "kling"})
+	tests := []struct {
+		name    string
+		event   types.Event
+		wantErr bool
+	}{
+		{"update ev2", newEvent2, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rep := setupDatabaseMock(t)
+			if err := rep.UpdateEvent(tt.event); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			event, _ := rep.GetEvent(tt.event.ID)
+			if !util.EqualEvent(event, &newEvent2, true) {
+				t.Errorf("UpdateEvent() wanted = %v, got event = %v", newEvent2, event)
+			}
+		})
+	}
+}

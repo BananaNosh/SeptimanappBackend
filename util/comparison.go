@@ -2,12 +2,19 @@ package util
 
 import (
 	"SeptimanappBackend/types"
+	"sort"
 )
 
 func EqualEvents(events1 types.Events, events2 types.Events, checkIds bool) bool {
 	if len(events1) != len(events2) {
 		return false
 	}
+	sort.Slice(events1, func(i, j int) bool {
+		return events1[i].ID < events1[j].ID
+	})
+	sort.Slice(events2, func(i, j int) bool {
+		return events2[i].ID < events2[j].ID
+	})
 	for i := range events1 {
 		e1 := events1[i]
 		e2 := events2[i]
@@ -32,6 +39,12 @@ func EqualLocatedStrings(strings1 []types.LocatedString, strings2 []types.Locate
 	if len(strings2) != len(strings1) {
 		return false
 	}
+	sort.Slice(strings1, func(i, j int) bool {
+		return strings1[i].ID < strings1[j].ID
+	})
+	sort.Slice(strings2, func(i, j int) bool {
+		return strings2[i].ID < strings2[j].ID
+	})
 	for i := range strings1 {
 		s1 := strings1[i]
 		s2 := strings2[i]

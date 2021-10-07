@@ -99,7 +99,7 @@ func (rep Repository) GetEvent(id int) (*types.Event, error) {
 	}
 
 	var locatedStrings []types.LocatedString
-	err = rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Where("parent_id = ?", id).Find(&locatedStrings).Error
+	err = rep.Db.Model(&event).Association("Names").Find(&locatedStrings)
 	if err != nil {
 		return nil, err
 	}
@@ -175,6 +175,27 @@ func (rep Repository) AddEvents(events types.Events) ([]int, error) {
 		ids = append(ids, ev.ID)
 	}
 	return ids, err
+}
+
+func (rep Repository) DeleteEvent(id int) error {
+	return rep.DeleteEvents([]int{id})
+}
+
+func (rep Repository) DeleteEvents(ids []int) error {
+	err := rep.Db.Delete(&types.Events{}, ids).Error
+
+	if err == nil {
+		err = rep.Db.Where("parent_type = ?", "events").Where("parent_id IN ?", ids).Delete(&types.LocatedString{}).Error
+	}
+	return err
+}
+
+func (rep Repository) UpdateEvent(event types.Event) error {
+	err := rep.Db.Save(&event).Error
+	if err == nil {
+		err = rep.Db.Model(&event).Association("Names").Replace(event.Names)
+	}
+	return err
 }
 
 func (rep Repository) GetLocation(id string) (*types.Location, error) {
