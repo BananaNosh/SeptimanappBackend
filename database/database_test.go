@@ -252,21 +252,32 @@ func TestRepository_UpdateEvent(t *testing.T) {
 	newEvent2.Start = eventTime3.ToTime(util.Locale())
 	newEvent2.End = eventTime4.ToTime(util.Locale())
 	newEvent2.Names = append(newEvent2.Names, types.LocatedString{Value: "huh", Language: "kling"})
+	newEvent10 := types.Event{
+		ID:    10,
+		Start: time.Time{},
+		End:   time.Time{},
+		Names: nil,
+	}
 	tests := []struct {
 		name    string
 		event   types.Event
 		wantErr bool
 	}{
 		{"update ev2", newEvent2, false},
+		{"update ev10", newEvent10, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rep := setupDatabaseMock(t)
-			if err := rep.UpdateEvent(tt.event); (err != nil) != tt.wantErr {
-				t.Errorf("UpdateEvent() error = %v, wantErr %v", err, tt.wantErr)
+			err := rep.UpdateEvent(tt.event)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("UpdateEvent() error = %v, wantErr %v", err, tt.wantErr)
+				}
+				return
 			}
 			event, _ := rep.GetEvent(tt.event.ID)
-			if !util.EqualEvent(event, &newEvent2, true) {
+			if !util.EqualEvent(event, &tt.event, true) {
 				t.Errorf("UpdateEvent() wanted = %v, got event = %v", newEvent2, event)
 			}
 		})

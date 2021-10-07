@@ -14,6 +14,8 @@ import (
 
 const dataPath = "./data"
 
+const RecordNotFound = "record not found"
+
 type Repository struct {
 	Db *gorm.DB
 }
@@ -92,7 +94,7 @@ func (rep Repository) GetEvent(id int) (*types.Event, error) {
 	var event types.Event
 	err := rep.Db.First(&event, id).Error
 	if err != nil {
-		if err.Error() == "record not found" {
+		if err.Error() == RecordNotFound {
 			return nil, nil
 		}
 		return nil, err
@@ -191,7 +193,11 @@ func (rep Repository) DeleteEvents(ids []int) error {
 }
 
 func (rep Repository) UpdateEvent(event types.Event) error {
-	err := rep.Db.Save(&event).Error
+	err := rep.Db.First(&types.Event{}, event.ID).Error
+	if err != nil {
+		return err
+	}
+	err = rep.Db.Save(&event).Error
 	if err == nil {
 		err = rep.Db.Model(&event).Association("Names").Replace(event.Names)
 	}
