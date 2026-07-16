@@ -51,10 +51,12 @@ func horariaToEvents(horariumDe *Horarium, horariumLa *Horarium, idOffset int) (
 		return nil, errors.New("number of events does not match")
 	}
 
-	sort.Slice(eventsDe, func(i, j int) bool {
+	// stable: the de and la events are zipped by position below, so events
+	// sharing a start and end must keep their order from the json
+	sort.SliceStable(eventsDe, func(i, j int) bool {
 		return eventsDe[i].Start.Before(eventsDe[j].Start) || (eventsDe[i].Start == eventsDe[j].Start && eventsDe[i].End.Before(eventsDe[j].End))
 	})
-	sort.Slice(eventsLa, func(i, j int) bool {
+	sort.SliceStable(eventsLa, func(i, j int) bool {
 		return eventsLa[i].Start.Before(eventsLa[j].Start) || (eventsLa[i].Start == eventsLa[j].Start && eventsLa[i].End.Before(eventsLa[j].End))
 	})
 
@@ -85,7 +87,7 @@ type EventTime struct {
 }
 
 func (evTime EventTime) ToTime(location *time.Location) time.Time {
-	return time.Date(evTime.Year, time.Month(evTime.Month+1), evTime.Day, evTime.Hour, evTime.Month, 0, 0, location)
+	return time.Date(evTime.Year, time.Month(evTime.Month+1), evTime.Day, evTime.Hour, evTime.Minute, 0, 0, location)
 }
 
 func EventsFromJsonHoraria(dataPath string, dataIdOffset int) ([]types.Event, error) {
