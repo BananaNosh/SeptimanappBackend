@@ -7,42 +7,44 @@ import (
 	"testing"
 )
 
-var locations []types.Location
-
-func init() {
-	location1 := types.Location{
-		ID:              "test1",
-		OverallLocation: "over1",
-		Longitude:       100,
-		Latitude:        1000,
-		Altitude:        10,
-		IsMain:          true,
-		Titles: []types.LocatedString{
-			{Value: "testTitle1de", Language: "de"},
-			{Value: "testTitle1la", Language: "la"},
+// testLocations returns the locations of data/testData/locationHelper, whose
+// overallLocation comes from the file name. Fresh on every call, for the same
+// reason as testEvents.
+func testLocations() []types.Location {
+	return []types.Location{
+		{
+			ID:              "test1",
+			OverallLocation: "over1",
+			Longitude:       100,
+			Latitude:        1000,
+			Altitude:        10,
+			IsMain:          true,
+			Titles: []types.LocatedString{
+				{Value: "testTitle1de", Language: "de"},
+				{Value: "testTitle1la", Language: "la"},
+			},
+			Descriptions: []types.LocatedString{
+				{Value: "testDesc1de", Language: "de"},
+				{Value: "testDesc1la", Language: "la"},
+			},
 		},
-		Descriptions: []types.LocatedString{
-			{Value: "testDesc1de", Language: "de"},
-			{Value: "testDesc1la", Language: "la"},
+		{
+			ID:              "test2",
+			OverallLocation: "over1",
+			Longitude:       101,
+			Latitude:        1001,
+			Altitude:        1,
+			IsMain:          true,
+			Titles: []types.LocatedString{
+				{Value: "testTitle2de", Language: "de"},
+				{Value: "testTitle2la", Language: "la"},
+			},
+			Descriptions: []types.LocatedString{
+				{Value: "testDesc2de", Language: "de"},
+				{Value: "testDesc2la", Language: "la"},
+			},
 		},
 	}
-	location2 := types.Location{
-		ID:              "test2",
-		OverallLocation: "over1",
-		Longitude:       101,
-		Latitude:        1001,
-		Altitude:        1,
-		IsMain:          true,
-		Titles: []types.LocatedString{
-			{Value: "testTitle2de", Language: "de"},
-			{Value: "testTitle2la", Language: "la"},
-		},
-		Descriptions: []types.LocatedString{
-			{Value: "testDesc2de", Language: "de"},
-			{Value: "testDesc2la", Language: "la"},
-		},
-	}
-	locations = append(locations, location1, location2)
 }
 
 func TestLocationsFromJsonFiles(t *testing.T) {
@@ -54,7 +56,7 @@ func TestLocationsFromJsonFiles(t *testing.T) {
 		{
 			"test1",
 			"../data/testData/locationHelper/",
-			locations,
+			testLocations(),
 		},
 	}
 	for _, tt := range tests {
