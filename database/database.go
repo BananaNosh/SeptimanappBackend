@@ -306,8 +306,8 @@ func (rep Repository) GetLocations(overallLocation *types.OverallLocation) ([]ty
 	return locations, nil
 }
 
-func (rep Repository) StoreSecurityInfo(info types.ApiKeyInfo) {
-	rep.Db.Create(info)
+func (rep Repository) StoreSecurityInfo(info types.ApiKeyInfo) error {
+	return rep.Db.Create(&info).Error
 }
 
 func (rep Repository) HasApiKeyInfo(info types.ApiKeyInfo) (bool, error) {

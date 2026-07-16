@@ -161,5 +161,8 @@ func locationStringsToMap(strings []LocatedString) map[string]string {
 }
 
 type ApiKeyInfo struct {
-	ApiKeyHash string `gorm:"primary_key,column:api_key"`
+	// gorm v2 separates tag settings with ';' - with ',' the whole tag is ignored
+	// and the table ends up without a primary key on the column every
+	// authorisation looks up.
+	ApiKeyHash string `gorm:"primaryKey"`
 }

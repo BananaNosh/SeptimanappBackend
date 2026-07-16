@@ -9,12 +9,11 @@ import (
 	"strings"
 )
 
+// CreateApikey returns a new random api key. Only the hash of a key is stored,
+// so the value returned here is the only copy of it there will ever be.
 func CreateApikey() string {
 	uuidWithHyphen := uuid.New()
-	unhashed := strings.Replace(uuidWithHyphen.String(), "-", "", -1)
-	fmt.Printf("ApiKeyHash: %s\n", unhashed)
-	key := HashKey(unhashed)
-	return key
+	return strings.Replace(uuidWithHyphen.String(), "-", "", -1)
 }
 
 func HashKey(unhashed string) string {
@@ -24,16 +23,16 @@ func HashKey(unhashed string) string {
 	return key
 }
 
-func StoreNewApiKey() {
+// StoreNewApiKey creates an api key, stores its hash and returns the key itself.
+// It is returned instead of printed so that a caller cannot hand out a key whose
+// hash never reached the database.
+func StoreNewApiKey(repository database.Repository) (string, error) {
 	key := CreateApikey()
-	info := types.ApiKeyInfo{
-		ApiKeyHash: key,
-	}
-	repository, err := database.GetRepository()
+	err := repository.StoreSecurityInfo(types.ApiKeyInfo{ApiKeyHash: HashKey(key)})
 	if err != nil {
-		fmt.Println(err)
+		return "", err
 	}
-	repository.StoreSecurityInfo(info)
+	return key, nil
 }
 
 func ValidateApikey(repository database.Repository, key string) (bool, error) {
