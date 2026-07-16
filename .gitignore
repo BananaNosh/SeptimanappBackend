@@ -45,3 +45,9 @@ captures/
 *.jks
 
 api_key.txt
+
+# Built from data/*.json on every start, and holds the hashes of the api keys
+data/septimana.db
+
+# Generated openapi clients and documentation
+openApi/doc/
