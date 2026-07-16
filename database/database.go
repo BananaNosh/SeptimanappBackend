@@ -246,12 +246,12 @@ func (rep Repository) GetLocation(id string) (*types.Location, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Where("parent_id = ?", id).Find(&titles).Error
+	err = rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "locations_description").Where("parent_id = ?", id).Find(&descriptions).Error
 	if err != nil {
 		return nil, err
 	}
 	location.Titles = titles
-	location.Titles = descriptions
+	location.Descriptions = descriptions
 	return &location, nil
 }
 
