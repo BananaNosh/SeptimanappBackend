@@ -8,6 +8,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"path"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -37,11 +38,42 @@ func openDB() (*gorm.DB, error) {
 }
 
 func insertStartEnd(db *gorm.DB) {
-	start := time.Date(2021, 7, 31, 16, 30, 0, 0, util.Locale())
-	end := time.Date(2021, 8, 7, 14, 0, 0, 0, util.Locale())
+	start := time.Date(2023, 7, 29, 16, 30, 0, 0, util.Locale())
+	end := time.Date(2023, 8, 5, 14, 0, 0, 0, util.Locale())
 	var event types.Event
 	db.FirstOrCreate(&event, types.Event{Start: start, End: end, Names: nil})
 
+}
+
+func (rep Repository) GetCurrentGathering() (*types.Event, error) {
+	/**
+	Return the current gathering which is the next one with an end in the future or nil if not yet defined
+	*/
+
+	//var event *types.Event
+	//subQuery := rep.Db.Model(&types.LocatedString{}).Where("parent_type = ?", "events").Select("parent_id").Where("parent_id = (?)", "parent_id%")
+	//err := rep.Db.Model(&types.Event{}).Where("NOT EXISTS (?)", subQuery).Order("start").First(event).Error
+	//err := rep.Db.Find(&events).Error
+	var events types.Events
+	err := rep.Db.Model(&types.Event{}).Preload("Names").Find(&events).Error
+	if err != nil {
+		return nil, err
+	}
+	startAndEnds := types.Events{}
+	for i := range events {
+		if len(events[i].Names) == 0 {
+			startAndEnds = append(startAndEnds, events[i])
+		}
+	}
+	sort.Slice(startAndEnds, func(i, j int) bool { // sort from newest to oldest event by endpoint
+		return startAndEnds[i].End.After(startAndEnds[j].End)
+	})
+	for i := range startAndEnds {
+		if startAndEnds[i].End.After(time.Now()) {
+			return &startAndEnds[i], nil
+		}
+	}
+	return nil, nil
 }
 
 func (rep Repository) InitDatabase() {
@@ -94,9 +126,6 @@ func (rep Repository) GetEvent(id int) (*types.Event, error) {
 	var event types.Event
 	err := rep.Db.First(&event, id).Error
 	if err != nil {
-		if err.Error() == RecordNotFound {
-			return nil, nil
-		}
 		return nil, err
 	}
 
@@ -107,7 +136,7 @@ func (rep Repository) GetEvent(id int) (*types.Event, error) {
 	}
 	event.Names = locatedStrings
 	if len(event.Names) == 0 { // event without information - should be a total-septimana event
-		return nil, nil
+		return nil, errors.New(RecordNotFound)
 	}
 	event.Model = gorm.Model{}
 	return &event, nil
@@ -208,9 +237,6 @@ func (rep Repository) GetLocation(id string) (*types.Location, error) {
 	var location types.Location
 	err := rep.Db.First(&location, "id = ?", id).Error
 	if err != nil {
-		if err.Error() == "record not found" {
-			return nil, nil
-		}
 		return nil, err
 	}
 

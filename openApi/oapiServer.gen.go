@@ -62,6 +62,9 @@ type ServerInterface interface {
 	// (PUT /events/{id})
 	PutEventsId(ctx echo.Context, id EventId) error
 
+	// (GET /gatherings/current/)
+	GetGatheringsCurrent(ctx echo.Context) error
+
 	// (GET /locations)
 	GetLocations(ctx echo.Context, params GetLocationsParams) error
 
@@ -155,6 +158,15 @@ func (w *ServerInterfaceWrapper) PutEventsId(ctx echo.Context) error {
 	return err
 }
 
+// GetGatheringsCurrent converts echo context to params.
+func (w *ServerInterfaceWrapper) GetGatheringsCurrent(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetGatheringsCurrent(ctx)
+	return err
+}
+
 // GetLocations converts echo context to params.
 func (w *ServerInterfaceWrapper) GetLocations(ctx echo.Context) error {
 	var err error
@@ -222,7 +234,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/events/:id", wrapper.DeleteEventsId)
 	router.GET(baseURL+"/events/:id", wrapper.GetEventsId)
 	router.PUT(baseURL+"/events/:id", wrapper.PutEventsId)
+	router.GET(baseURL+"/gatherings/current/", wrapper.GetGatheringsCurrent)
 	router.GET(baseURL+"/locations", wrapper.GetLocations)
 	router.GET(baseURL+"/locations/:id", wrapper.GetLocationsId)
 
 }
+

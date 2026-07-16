@@ -56,6 +56,15 @@ func (s SeptimanappRestApi) AuthorizeModifyEvents(key string, _ echo.Context) (b
 	return security.ValidateApikey(s.repository, key)
 }
 
+func (s SeptimanappRestApi) GetGatheringsCurrent(ctx echo.Context) error {
+	event, err := s.repository.GetCurrentGathering()
+	if err == nil {
+		return ctx.JSON(http.StatusOK, event)
+	} else {
+		return sendInternalError(ctx)
+	}
+}
+
 func (s SeptimanappRestApi) GetEvents(ctx echo.Context, params GetEventsParams) error {
 	events, err := s.repository.GetEvents(params.Year)
 	if err == nil {

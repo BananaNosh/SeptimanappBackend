@@ -23,7 +23,7 @@ components:
           description: "The end time of the event as UNIX timestamp"
         names:
           $ref: "#/components/schemas/stringMap"
-          description: "Map containing a name/description of the event for given languages"
+#          description: "Map containing a name/description of the event for given languages"
 #        location:
 #          type: string
 #          description: "The location of the event"
@@ -43,14 +43,28 @@ components:
           description: "The end time of the event as UNIX timestamp"
         names:
           $ref: "#/components/schemas/stringMap"
-          description: "Map containing a name/description of the event for given languages"
-    #        location:
-    #          $ref: "#/components/schemas/Locations"
-    #          description: "The location of the event"
+#          description: "Map containing a name/description of the event for given languages"
+#            location:
+#              $ref: "#/components/schemas/Locations"
+#              description: "The location of the event"
     events:
       type: array
       items:
         $ref: "#/components/schemas/event"
+
+    gathering:
+      type: object
+      properties:
+        start:
+          type: integer
+          description: "The start time of the gathering as UNIX timestamp"
+        end:
+          type: integer
+          description: "The end time of the gathering as UNIX timestamp"
+        location:
+          $ref: "#/components/schemas/overallLocation"
+#          description: "The main city or place the gathering is taking place"
+
 
     location:
       type: object
@@ -59,7 +73,7 @@ components:
           type: string
         overallLocation:
           $ref: "#/components/schemas/overallLocation"
-          description: "The main city or place which the location belong to"
+#          description: "The main city or place which the location belong to"
         longitude:
           type: number
           format: float
@@ -74,10 +88,10 @@ components:
           description: "true if the location is the main meeting-building"
         titles:
           $ref: "#/components/schemas/stringMap"
-          description: "Map containing the title of the location for given languages"
+#          description: "Map containing the title of the location for given languages"
         descriptions:
           $ref: "#/components/schemas/stringMap"
-          description: "Map containing the description(if given) of the location for given languages"
+#          description: "Map containing the description(if given) of the location for given languages"
 
     locations:
       type: array
@@ -92,7 +106,9 @@ components:
     overallLocation:
       type: string
       enum: [ "amoeneburg", "braunfels" ]
-      example: "braunfels"
+      example: "braunfels"#
+      description: "The main city or place which something is taking place"
+
 
     stringMap:
       type: object

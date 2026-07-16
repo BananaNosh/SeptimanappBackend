@@ -21,7 +21,7 @@ paths:
               schema:
                 $ref: "./types.yaml#/components/schemas/eventWithId"
         404:
-          description: "If event not found"
+          description: "If event with given id not found"
     put:
       security:
         - app_id: []
@@ -97,6 +97,16 @@ paths:
                   type: integer
                 description: "The ids of the created events"
 
+  /gatherings/current/:
+    get:
+      responses:
+        200:
+          description: "Returns the current gathering"
+          content:
+            application/json:
+              schema:
+                $ref: "./types.yaml#/components/schemas/gathering"
+
   /locations/{id}:
     get:
       parameters:
@@ -112,6 +122,8 @@ paths:
             application/json:
               schema:
                 $ref: "./types.yaml#/components/schemas/location"
+        404:
+          description: "if no location with this id was found"
   /locations:
     parameters:
       - name: overallLocation

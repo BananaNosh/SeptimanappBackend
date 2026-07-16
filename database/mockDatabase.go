@@ -11,7 +11,7 @@ func GetMockRepository() (Repository, error) {
 	//	DisableForeignKeyConstraintWhenMigrating: true,
 	//	//Logger: newLogger,
 	//}
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"))
+	db, err := gorm.Open(sqlite.Open("file::memory:"))
 	return Repository{Db: db}, err
 }
 
